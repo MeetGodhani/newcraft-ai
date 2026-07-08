@@ -469,6 +469,61 @@ footer { text-align:center; padding:26px; color:var(--ink-dim); font-size:.74rem
 </style>
 </head>
 <body>
+<!-- ============ PRIVATE ACCESS LOCK ============ -->
+<div id="nc-gate" style="position:fixed;inset:0;z-index:9999;display:grid;place-items:center;
+  background:radial-gradient(900px 600px at 80% -10%,#3b1d3f,transparent 60%),linear-gradient(160deg,#101322,#1a1430 55%,#241028);
+  font-family:-apple-system,'Segoe UI',Roboto,system-ui,sans-serif;color:#eef0f6;">
+  <div style="width:min(380px,92vw);padding:36px 30px;text-align:center;border-radius:22px;
+    background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.04));
+    border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(20px);
+    box-shadow:0 18px 50px rgba(0,0,0,.4);">
+    <svg width="58" height="58" viewBox="0 0 64 64" style="margin-bottom:14px">
+      <rect x="2" y="2" width="60" height="60" rx="15" fill="#1a1a2e" stroke="#d4a017" stroke-width="2.5"/>
+      <path d="M22 44 V20 L42 44 V20" fill="none" stroke="#d4a017" stroke-width="4.4"
+        stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h2 style="font-family:'Sora',sans-serif;font-size:1.25rem;margin-bottom:6px">🔒 Private Access</h2>
+    <p style="color:rgba(238,240,246,.62);font-size:.85rem;margin-bottom:20px">
+      Enter the password to open NewCraft AI.</p>
+    <form id="nc-gate-form">
+      <input id="nc-gate-pass" type="password" placeholder="Password" autocomplete="current-password"
+        style="width:100%;padding:12px 14px;border-radius:12px;color:#eef0f6;font-size:.95rem;
+        background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);outline:none;text-align:center;">
+      <button type="submit" style="width:100%;margin-top:12px;padding:13px;border:none;border-radius:12px;
+        cursor:pointer;font-family:'Sora',sans-serif;font-weight:700;font-size:.95rem;color:#1a1a2e;
+        background:linear-gradient(135deg,#eecb6b,#d4a017);">Unlock →</button>
+    </form>
+    <p id="nc-gate-err" style="color:#ff7a7a;font-size:.82rem;min-height:1.2em;margin-top:12px"></p>
+  </div>
+</div>
+<script>
+(function () {
+  var HASH = "0b97313d6b5ddec18f0b4f349ef3ca844abcee09744ee66e323f467fcd8ef37a";
+  var gate = document.getElementById('nc-gate');
+  document.documentElement.style.overflow = 'hidden';
+  function unlock() {
+    gate.remove();
+    document.documentElement.style.overflow = '';
+    try { sessionStorage.setItem('nc_gate_ok', '1'); } catch (e) {}
+  }
+  try { if (sessionStorage.getItem('nc_gate_ok') === '1') return unlock(); } catch (e) {}
+  async function sha256(str) {
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(function (b) {
+      return b.toString(16).padStart(2, '0'); }).join('');
+  }
+  document.getElementById('nc-gate-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var v = document.getElementById('nc-gate-pass').value;
+    var err = document.getElementById('nc-gate-err');
+    try {
+      if (await sha256(v) === HASH) unlock();
+      else { err.textContent = 'Wrong password. Try again.';
+        document.getElementById('nc-gate-pass').value = ''; }
+    } catch (_) { err.textContent = 'This browser cannot verify the password.'; }
+  });
+  document.getElementById('nc-gate-pass').focus();
+})();
+</script>
 <div class="bg-blob blob-gold"></div>
 <div class="bg-blob blob-rose"></div>
 <div class="bg-blob blob-teal"></div>
