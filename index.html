@@ -165,6 +165,16 @@ select option{background:#1c1730}
 .slot.filled .plus,.slot.filled .role-mid{display:none}
 .slot .role-tag{position:absolute;bottom:0;left:0;right:0;padding:4px 6px;z-index:1;background:linear-gradient(transparent,rgba(0,0,0,.75));font-size:.58rem;letter-spacing:.4px;text-transform:uppercase;color:var(--gold-soft);display:none;text-align:center}
 .slot.filled .role-tag{display:block}
+.uc-av{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.75rem;font-weight:700;color:#1a1a2e;background:linear-gradient(135deg,var(--gold-soft),var(--gold));flex:0 0 auto}
+.uc-name{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.uc-out{display:grid;place-items:center;color:var(--ink)}
+.adm-card{display:flex;gap:14px;padding:14px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--stroke);margin-bottom:12px}
+.adm-thumb{width:60px;height:76px;object-fit:cover;border-radius:9px;flex:0 0 auto}
+.adm-info{flex:1;min-width:0}
+.adm-info>b{font-size:.9rem;display:block;line-height:1.3}
+.adm-sub{font-size:.75rem;color:var(--ink-dim);display:block;margin-top:4px}
+.adm-chips{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}
+.adm-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 #pageLoader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:radial-gradient(900px 600px at 80% -10%,#3b1d3f,transparent 60%),linear-gradient(160deg,#101322,#1a1430 55%,#241028);transition:opacity .6s ease,visibility .6s}
 #pageLoader.done{opacity:0;visibility:hidden}
 .pl-inner{text-align:center}
@@ -191,6 +201,9 @@ footer{text-align:center;padding:26px;color:var(--ink-dim);font-size:.74rem}
   .kpi-row{grid-template-columns:1fr 1fr}
   .detail-grid,.form-grid{grid-template-columns:1fr}
   .slots{grid-template-columns:repeat(3,1fr)}
+  .uc-name{display:none}
+  .user-chip{padding:5px 6px}
+  .brand-name{font-size:1rem}
 }
 @media (max-width:480px){.brand-sub{display:none}.cat-grid{grid-template-columns:1fr 1fr;gap:10px}}
 </style>
@@ -249,6 +262,7 @@ document.getElementById('nc-gate-pass').focus();})();
     <div class="role-tabs"><div class="role-tab active" id="roleTabCustomer" onclick="App.setAuthRole('customer')">👤 Customer</div><div class="role-tab" id="roleTabAdmin" onclick="App.setAuthRole('admin')">🛡 Admin</div></div>
     <h2 id="authTitle">Welcome back</h2><p class="auth-sub" id="authSub">Sign in to browse and download designs.</p>
     <div class="admin-hint hidden" id="adminHint">🛡 <b>Admin demo login</b><br>Email: <b>admin@newcraft.ai</b><br>Password: <b>admin123</b></div>
+    <div class="admin-hint" id="customerHint" style="background:rgba(87,201,139,.1);border-color:rgba(87,201,139,.32);color:var(--ok)">👤 <b>Demo customer login</b><br>Email: <b>rajesh@surat.com</b> · Password: <b>demo123</b> <span style="opacity:.75">(approved to download)</span><br>Email: <b>anil@sarees.in</b> · Password: <b>demo123</b> <span style="opacity:.75">(view only)</span></div>
     <form id="authForm">
       <input id="aName" type="text" placeholder="Full name" class="hidden">
       <input id="aEmail" type="email" placeholder="Email address" required>
@@ -327,7 +341,7 @@ document.getElementById('nc-gate-pass').focus();})();
 <section class="screen" id="screen-adminDesigns">
   <div class="glass card">
     <div class="section-heading"><h2>Manage Designs <span class="admin-badge">ADMIN</span></h2><a class="btn btn-gold" style="padding:9px 18px;font-size:.82rem" onclick="go('adminUpload')">⬆ Upload</a></div>
-    <div class="table-wrap"><table class="dtable" id="adDesigns"></table></div>
+    <div id="adDesigns"></div>
     <div class="empty hidden" id="adDesignsEmpty">No designs yet — upload your first one.</div>
   </div>
 </section>
@@ -336,7 +350,7 @@ document.getElementById('nc-gate-pass').focus();})();
 <section class="screen" id="screen-adminCustomers">
   <div class="glass card">
     <div class="section-heading"><h2>Customers &amp; Download Access <span class="admin-badge">ADMIN</span></h2></div>
-    <div class="table-wrap"><table class="dtable" id="adCustomers"></table></div>
+    <div id="adCustomers"></div>
   </div>
 </section>
 
@@ -601,23 +615,32 @@ const Admin=(()=>{
   function designs(){
     const list=Designs.all();
     $('adDesignsEmpty').classList.toggle('hidden',list.length>0);
-    $('adDesigns').innerHTML = list.length? `<thead><tr><th>Design</th><th>Section</th><th>Files</th><th>Status</th><th>Actions</th></tr></thead><tbody>${list.map(d=>`
-      <tr><td><img class="mini-thumb" src="${d.thumb}"> ${d.name}</td><td>${d.category}</td>
-      <td>${d.files.map(f=>`<span class="file-chip" style="cursor:pointer" onclick="Admin.dl('${d.id}','${f.id}')">${fileIcon(f.name)} ${f.name.split('.').pop().toUpperCase()}</span>`).join(' ')}</td>
-      <td><span class="pill ${d.published?'ok':'off'}">${d.published?'Published':'Hidden'}</span></td>
-      <td><button class="tbtn" onclick="Admin.togglePub('${d.id}')">${d.published?'Hide':'Publish'}</button>
-      <button class="tbtn danger" onclick="Admin.del('${d.id}')">Delete</button></td></tr>`).join('')}</tbody>` : '';
+    $('adDesigns').innerHTML = list.map(d=>`
+      <div class="adm-card">
+        <img class="adm-thumb" src="${d.thumb}" alt="">
+        <div class="adm-info">
+          <b>${d.name}</b>
+          <span class="adm-sub">${d.category} · ${d.files.length} file${d.files.length!==1?'s':''} · <span class="pill ${d.published?'ok':'off'}">${d.published?'Published':'Hidden'}</span></span>
+          <div class="adm-chips">${d.files.map(f=>`<span class="file-chip" style="cursor:pointer" onclick="Admin.dl('${d.id}','${f.id}')">${fileIcon(f.name)} ${f.name.split('.').pop().toUpperCase()} ⬇</span>`).join('')}</div>
+          <div class="adm-actions"><button class="tbtn" onclick="Admin.togglePub('${d.id}')">${d.published?'Hide':'Publish'}</button><button class="tbtn danger" onclick="Admin.del('${d.id}')">Delete</button></div>
+        </div>
+      </div>`).join('');
   }
   async function dl(did,fid){ const d=Designs.all().find(x=>x.id===did); await downloadFile(d.files.find(f=>f.id===fid)); }
   function togglePub(id){ const l=Designs.all(); const d=l.find(x=>x.id===id); d.published=!d.published; Designs.save(l); designs(); }
   async function del(id){ const l=Designs.all(); const d=l.find(x=>x.id===id); if(d){ for(const f of d.files) await IDB.del(f.id); logMe('🗑','Deleted '+d.name); } Designs.save(l.filter(x=>x.id!==id)); designs(); }
   function customersScreen(){
     const cu=customers();
-    $('adCustomers').innerHTML=`<thead><tr><th>Customer</th><th>Email</th><th>Joined</th><th>Download Access</th><th>Action</th></tr></thead><tbody>${cu.map(u=>`
-      <tr><td><span class="av">${(u.name||'?')[0]}</span>${u.name}</td><td>${u.email}</td><td>${u.joined||'—'}</td>
-      <td><span class="pill ${u.canDownload?'ok':'off'}">${u.canDownload?'Approved':'View only'}</span></td>
-      <td><button class="tbtn" onclick="Admin.toggleDl('${u.email}')">${u.canDownload?'Revoke':'Approve'}</button></td></tr>`).join('')
-      || '<tr><td colspan="5" style="color:var(--ink-dim)">No customers yet.</td></tr>'}</tbody>`;
+    $('adCustomers').innerHTML=cu.length? cu.map(u=>`
+      <div class="adm-card">
+        <span class="av" style="width:44px;height:44px;font-size:1rem">${(u.name||'?')[0].toUpperCase()}</span>
+        <div class="adm-info">
+          <b>${u.name}</b>
+          <span class="adm-sub">${u.email} · joined ${u.joined||'—'}</span>
+          <div style="margin:9px 0"><span class="pill ${u.canDownload?'ok':'off'}">${u.canDownload?'✅ Approved to download':'🔒 View only'}</span></div>
+          <div class="adm-actions"><button class="tbtn" onclick="Admin.toggleDl('${u.email}')">${u.canDownload?'Revoke access':'Approve downloads'}</button></div>
+        </div>
+      </div>`).join('') : '<p style="color:var(--ink-dim);font-size:.85rem">No customers yet.</p>';
   }
   function toggleDl(email){ const l=Users.all(); const u=l.find(x=>x.email===email); if(u){u.canDownload=!u.canDownload; logMe('🔑',(u.canDownload?'Approved':'Revoked')+' downloads for '+email);} Users.save(l); customersScreen(); }
   return { dashboard, initUpload, upload, rmChip, designs, dl, togglePub, del, customers:customersScreen, toggleDl };
@@ -686,13 +709,14 @@ const App=(()=>{
   function renderNav(){
     const u=user(); const items=!u?PUB:(u.role==='admin'?ADMIN_NAV:CUST_NAV);
     $('mainNav').innerHTML=items.map(([s,l])=>`<a data-nav="${s}" onclick="go('${s}')">${l}</a>`).join('');
-    $('navAuth').innerHTML=u?`<div class="glass user-chip"><span>${u.name}${u.role==='admin'?'<span class="admin-badge">ADMIN</span>':''}</span><button onclick="App.logout()" title="Sign out">⎋</button></div>`
+    $('navAuth').innerHTML=u?`<div class="glass user-chip"><span class="uc-av">${(u.name||'?')[0].toUpperCase()}</span><span class="uc-name">${u.name}${u.role==='admin'?'<span class="admin-badge">ADMIN</span>':''}</span><button class="uc-out" onclick="App.logout()" title="Sign out"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button></div>`
       :`<a class="btn btn-gold" style="padding:10px 22px;font-size:.84rem" onclick="go('auth')">Sign In</a>`;
   }
   function setAuthRole(role){
     authRole=role; const admin=role==='admin';
     $('roleTabCustomer').classList.toggle('active',!admin); $('roleTabAdmin').classList.toggle('active',admin);
-    $('adminHint').classList.toggle('hidden',!admin); $('authToggleWrap').classList.toggle('hidden',admin);
+    $('adminHint').classList.toggle('hidden',!admin); $('customerHint').classList.toggle('hidden',admin);
+    $('authToggleWrap').classList.toggle('hidden',admin);
     if(admin)authMode='login'; setAuthMode(authMode);
   }
   function gotoLogin(role){ go('auth'); setAuthRole(role); }
