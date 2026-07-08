@@ -153,6 +153,18 @@ select option{background:#1c1730}
 .tbtn.danger:hover{background:rgba(255,122,122,.16);border-color:var(--fail)}
 .btn-wide{width:100%;padding:15px;font-size:1rem;margin-top:20px}
 .mini-thumb{width:44px;height:54px;object-fit:cover;border-radius:7px}
+.slots{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.slot{position:relative;aspect-ratio:3/4;border-radius:16px;cursor:pointer;border:1.5px dashed rgba(255,255,255,.28);background:rgba(255,255,255,.04);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:.25s;overflow:hidden}
+.slot:hover{border-color:var(--gold-soft);background:rgba(212,160,23,.08)}
+.slot .plus{font-size:1.7rem;color:var(--ink-dim);font-weight:300;line-height:1}
+.slot .role{font-size:.62rem;color:var(--ink-dim);letter-spacing:.5px;text-transform:uppercase;text-align:center;padding:0 4px}
+.slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.slot .remove{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;border:none;cursor:pointer;background:rgba(0,0,0,.65);color:#fff;display:none;z-index:2;font-size:.8rem}
+.slot.filled{border-style:solid;border-color:rgba(212,160,23,.55)}
+.slot.filled .remove{display:block}
+.slot.filled .plus,.slot.filled .role-mid{display:none}
+.slot .role-tag{position:absolute;bottom:0;left:0;right:0;padding:4px 6px;z-index:1;background:linear-gradient(transparent,rgba(0,0,0,.75));font-size:.58rem;letter-spacing:.4px;text-transform:uppercase;color:var(--gold-soft);display:none;text-align:center}
+.slot.filled .role-tag{display:block}
 #pageLoader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:radial-gradient(900px 600px at 80% -10%,#3b1d3f,transparent 60%),linear-gradient(160deg,#101322,#1a1430 55%,#241028);transition:opacity .6s ease,visibility .6s}
 #pageLoader.done{opacity:0;visibility:hidden}
 .pl-inner{text-align:center}
@@ -670,7 +682,7 @@ const App=(()=>{
   const user=()=>JSON.parse(localStorage.getItem('nc_session')||'null');
   function session(u){ localStorage.setItem('nc_session',JSON.stringify(u)); renderNav(); go(u.role==='admin'?'admin':'catalog'); }
   function logout(){ localStorage.removeItem('nc_session'); renderNav(); go('home'); }
-  const CUST_NAV=[['home','Home'],['catalog','Catalog'],['history','History']], ADMIN_NAV=[['admin','Dashboard'],['adminBuilder','AI Builder'],['adminUpload','Upload'],['adminDesigns','Designs'],['adminCustomers','Customers'],['history','History']], PUB=[['home','Home']];
+  const CUST_NAV=[['home','Home'],['catalog','Catalog'],['history','History']], ADMIN_NAV=[['home','Home'],['admin','Dashboard'],['adminBuilder','AI Builder'],['adminUpload','Upload'],['adminDesigns','Designs'],['adminCustomers','Customers'],['history','History']], PUB=[['home','Home']];
   function renderNav(){
     const u=user(); const items=!u?PUB:(u.role==='admin'?ADMIN_NAV:CUST_NAV);
     $('mainNav').innerHTML=items.map(([s,l])=>`<a data-nav="${s}" onclick="go('${s}')">${l}</a>`).join('');
