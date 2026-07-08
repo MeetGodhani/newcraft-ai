@@ -3,11 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NewCraft AI — Jacquard Design Studio</title>
+<title>NewCraft AI — Jacquard Design Catalog</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a1a2e'/%3E%3Ctext x='32' y='42' font-family='Arial' font-size='26' font-weight='bold' fill='%23d4a017' text-anchor='middle'%3ENC%3C/text%3E%3C/svg%3E">
-<!-- No external dependencies: fonts fall back to the phone's own system fonts,
-     so this file works 100% offline / statically in any browser. -->
-<!-- PWA: installs as an app icon on iPhone (Add to Home Screen) and Android (Install app) -->
 <meta name="theme-color" content="#141225">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -15,2059 +12,577 @@
 <meta name="apple-mobile-web-app-title" content="NewCraft AI">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<script>
-  if ('serviceWorker' in navigator)
-    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
-</script>
 <style>
-/* ================= NewCraft AI — single-file website ================= */
 * { margin:0; padding:0; box-sizing:border-box; }
-:root {
-  --gold:#d4a017; --gold-soft:#eecb6b; --ink:#eef0f6;
-  --ink-dim:rgba(238,240,246,.62); --glass:rgba(255,255,255,.07);
-  --stroke:rgba(255,255,255,.16); --fail:#ff7a7a; --ok:#57c98b;
-}
+:root { --gold:#d4a017; --gold-soft:#eecb6b; --ink:#eef0f6; --ink-dim:rgba(238,240,246,.62);
+  --stroke:rgba(255,255,255,.16); --fail:#ff7a7a; --ok:#57c98b; }
 html { scroll-behavior:smooth; }
-body {
-  font-family:"Inter",-apple-system,"Segoe UI",Roboto,system-ui,sans-serif; color:var(--ink); min-height:100vh;
-  background:
-    radial-gradient(1200px 800px at 85% -10%, #3b1d3f 0%, transparent 60%),
-    radial-gradient(1000px 700px at -10% 30%, #14324a 0%, transparent 55%),
-    linear-gradient(160deg,#101322 0%,#1a1430 55%,#241028 100%);
-  background-attachment:fixed; overflow-x:hidden;
-}
+body { font-family:"Inter",-apple-system,"Segoe UI",Roboto,system-ui,sans-serif; color:var(--ink); min-height:100vh;
+  background:radial-gradient(1200px 800px at 85% -10%,#3b1d3f 0%,transparent 60%),
+    radial-gradient(1000px 700px at -10% 30%,#14324a 0%,transparent 55%),
+    linear-gradient(160deg,#101322 0%,#1a1430 55%,#241028 100%); background-attachment:fixed; overflow-x:hidden; }
 h1,h2,h3 { font-family:"Sora",-apple-system,"Segoe UI",Roboto,system-ui,sans-serif; letter-spacing:-.01em; }
-.bg-blob { position:fixed; border-radius:50%; filter:blur(90px); opacity:.33; z-index:-1;
-  animation:drift 24s ease-in-out infinite alternate; }
-.blob-gold { width:420px;height:420px;background:#d4a017;top:-120px;right:-80px; }
-.blob-rose { width:380px;height:380px;background:#8a1538;bottom:5%;left:-120px;animation-delay:-8s; }
-.blob-teal { width:300px;height:300px;background:#1a6b6b;top:45%;right:10%;animation-delay:-15s; }
-@keyframes drift { from{transform:translate(0,0) scale(1)} to{transform:translate(-60px,50px) scale(1.15)} }
-
-.glass {
-  background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.04));
-  backdrop-filter:blur(22px) saturate(140%); -webkit-backdrop-filter:blur(22px) saturate(140%);
-  border:1px solid var(--stroke); border-radius:22px;
-  box-shadow:0 18px 50px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.18);
+.bg-blob { position:fixed; border-radius:50%; filter:blur(90px); opacity:.33; z-index:-1; animation:drift 24s ease-in-out infinite alternate; }
+.blob-gold{width:420px;height:420px;background:#d4a017;top:-120px;right:-80px}
+.blob-rose{width:380px;height:380px;background:#8a1538;bottom:5%;left:-120px;animation-delay:-8s}
+.blob-teal{width:300px;height:300px;background:#1a6b6b;top:45%;right:10%;animation-delay:-15s}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(-60px,50px) scale(1.15)}}
+.glass{background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.04));backdrop-filter:blur(22px) saturate(140%);
+  -webkit-backdrop-filter:blur(22px) saturate(140%);border:1px solid var(--stroke);border-radius:22px;
+  box-shadow:0 18px 50px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.18)}
+.topbar{position:sticky;top:14px;z-index:40;max-width:1120px;margin:14px auto 0;padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.brand{display:flex;gap:12px;align-items:center;cursor:pointer}
+.brand-name{font-family:"Sora";font-weight:800;font-size:1.1rem}
+.ai-tag{background:linear-gradient(120deg,#eecb6b,#d4a017);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand-sub{font-size:.68rem;color:var(--ink-dim)}
+nav{display:flex;gap:4px;align-items:center}
+nav a{color:var(--ink-dim);text-decoration:none;font-size:.84rem;font-weight:500;padding:8px 14px;border-radius:10px;transition:.2s;cursor:pointer}
+nav a:hover{color:var(--ink);background:rgba(255,255,255,.07)}
+nav a.active{color:var(--gold-soft);background:rgba(212,160,23,.12)}
+.top-right{display:flex;align-items:center;gap:10px}
+.user-chip{display:flex;align-items:center;gap:9px;padding:6px 8px 6px 14px;border-radius:999px;font-size:.8rem}
+.user-chip button{border:none;cursor:pointer;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.1);color:var(--ink)}
+.user-chip button:hover{background:rgba(255,120,120,.25)}
+.admin-badge{font-size:.58rem;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:6px;background:#8a1538;color:#fff;margin-left:4px}
+.nav-burger{display:none;cursor:pointer;width:42px;height:42px;border-radius:12px;font-size:1.15rem;color:var(--ink);background:rgba(255,255,255,.08);border:1px solid var(--stroke)}
+main{max-width:1120px;margin:0 auto;padding:26px 16px 70px}
+.screen{display:none;animation:fadein .35s ease}
+.screen.on{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1}}
+.hero{text-align:center;padding:70px 20px 50px}
+.hero .logo-big{margin-bottom:26px;display:inline-block}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;line-height:1.15;background:linear-gradient(120deg,#fff 30%,var(--gold-soft) 70%);
+  background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:heroShine 7s linear infinite}
+@keyframes heroShine{to{background-position:200% center}}
+.hero p{color:var(--ink-dim);max-width:640px;margin:20px auto 0;font-size:1.02rem;line-height:1.65}
+.cta-row{display:flex;gap:14px;justify-content:center;margin-top:34px;flex-wrap:wrap}
+.btn{display:inline-block;padding:14px 30px;border-radius:14px;border:none;cursor:pointer;font-family:"Sora";font-weight:700;font-size:.95rem;text-decoration:none;transition:.25s}
+.btn-gold{color:#1a1a2e;background:linear-gradient(135deg,var(--gold-soft),var(--gold));box-shadow:0 10px 28px rgba(212,160,23,.35)}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(212,160,23,.5)}
+.btn-ghost{color:var(--ink);background:rgba(255,255,255,.08);border:1px solid var(--stroke)}
+.btn-ghost:hover{background:rgba(255,255,255,.14)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:10px}
+.feature{padding:26px}
+.feature .ic{font-size:1.6rem;margin-bottom:12px}
+.feature h3{font-size:1rem;margin-bottom:8px}
+.feature p{color:var(--ink-dim);font-size:.83rem;line-height:1.6}
+.sec-title{text-align:center;font-size:1.5rem;margin:54px 0 8px}
+.sec-sub{text-align:center;color:var(--ink-dim);font-size:.88rem;margin-bottom:28px}
+.auth-wrap{display:grid;place-items:center;min-height:64vh}
+.auth-card{width:min(410px,94vw);padding:36px 32px;text-align:center}
+.role-tabs{display:flex;gap:6px;margin-bottom:20px;padding:5px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--stroke)}
+.role-tab{flex:1;padding:11px 8px;border-radius:10px;cursor:pointer;text-align:center;font-size:.82rem;font-weight:600;color:var(--ink-dim);transition:.2s}
+.role-tab.active{color:#1a1a2e;background:linear-gradient(135deg,var(--gold-soft),var(--gold))}
+.auth-card h2{font-size:1.3rem;margin:14px 0 6px}
+.auth-sub{color:var(--ink-dim);font-size:.85rem;margin-bottom:20px}
+.admin-hint{margin:0 0 14px;padding:11px 14px;border-radius:10px;font-size:.74rem;line-height:1.6;background:rgba(212,160,23,.1);border:1px solid rgba(212,160,23,.3);color:var(--gold-soft);text-align:left}
+.admin-hint b{color:#fff}
+form{display:grid;gap:12px}
+input,select,textarea{padding:12px 14px;border-radius:12px;color:var(--ink);font:inherit;font-size:.9rem;background:rgba(255,255,255,.06);border:1px solid var(--stroke);outline:none;transition:.2s;width:100%;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,160,23,.18)}
+select option{background:#1c1730}
+.form-error{color:var(--fail);font-size:.83rem;min-height:1.2em;margin-top:10px}
+.auth-toggle{margin-top:16px;font-size:.82rem;color:var(--ink-dim)}
+.auth-toggle a{color:var(--gold-soft);cursor:pointer;font-weight:600;margin-left:5px}
+.card{padding:30px;margin-bottom:24px}
+.section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.section-heading h2{font-size:1.35rem}
+.filter-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.fchip{padding:8px 16px;border-radius:999px;font-size:.8rem;cursor:pointer;transition:.2s;color:var(--ink-dim);background:rgba(255,255,255,.06);border:1px solid var(--stroke)}
+.fchip:hover{color:var(--ink)}
+.fchip.active{color:#1a1a2e;background:linear-gradient(135deg,var(--gold-soft),var(--gold));border-color:transparent;font-weight:600}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.cat-card{overflow:hidden;padding:0;cursor:pointer;transition:.25s}
+.cat-card:hover{transform:translateY(-4px)}
+.cat-card .thumb{aspect-ratio:4/5;background:rgba(255,255,255,.05);display:block;width:100%;object-fit:cover}
+.cat-body{padding:14px 16px 16px}
+.cat-body h3{font-size:.9rem}
+.cat-cat{display:inline-block;margin-top:6px;font-size:.64rem;letter-spacing:.5px;text-transform:uppercase;color:var(--gold-soft);background:rgba(212,160,23,.12);padding:3px 10px;border-radius:999px}
+.cat-files{margin-top:10px;font-size:.72rem;color:var(--ink-dim)}
+.empty{text-align:center;color:var(--ink-dim);padding:60px 0;font-size:.9rem}
+/* design detail */
+.detail-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:26px}
+.detail-thumb{border-radius:16px;overflow:hidden;border:1px solid var(--stroke);background:rgba(255,255,255,.05)}
+.detail-thumb img{width:100%;display:block}
+.file-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--stroke);margin-bottom:10px}
+.file-ic{font-size:1.3rem}
+.file-meta{flex:1;min-width:0}
+.file-meta b{font-size:.86rem;display:block;word-break:break-all}
+.file-meta span{font-size:.72rem;color:var(--ink-dim)}
+.perm-note{padding:14px 16px;border-radius:12px;font-size:.84rem;margin-bottom:16px}
+.perm-yes{background:rgba(87,201,139,.12);border:1px solid rgba(87,201,139,.35);color:var(--ok)}
+.perm-no{background:rgba(255,122,122,.1);border:1px solid rgba(255,122,122,.3);color:var(--fail)}
+.dl-btn{padding:9px 16px;border-radius:10px;border:none;cursor:pointer;font-size:.8rem;font-weight:600;color:#1a1a2e;background:linear-gradient(135deg,var(--gold-soft),var(--gold))}
+.dl-btn:disabled{opacity:.4;cursor:not-allowed;background:rgba(255,255,255,.1);color:var(--ink-dim)}
+.dl-all{margin-top:6px}
+/* admin */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.kpi{padding:22px}
+.kpi .kpi-ic{font-size:1.3rem}
+.kpi .kpi-n{font-family:"Sora";font-weight:800;font-size:1.9rem;color:var(--gold-soft);margin-top:10px}
+.kpi .kpi-t{font-size:.72rem;color:var(--ink-dim);margin-top:3px;letter-spacing:.4px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-grid label,.full label{display:flex;flex-direction:column;gap:7px;font-size:.78rem;color:var(--ink-dim);font-weight:500}
+.full{margin-top:16px}
+.dropzone{border:1.5px dashed rgba(255,255,255,.28);border-radius:14px;padding:26px;text-align:center;cursor:pointer;transition:.2s;background:rgba(255,255,255,.03)}
+.dropzone:hover{border-color:var(--gold-soft);background:rgba(212,160,23,.06)}
+.dropzone .dz-ic{font-size:1.8rem}
+.dropzone p{font-size:.82rem;color:var(--ink-dim);margin-top:6px}
+.file-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.file-chip{display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:10px;font-size:.75rem;background:rgba(255,255,255,.06);border:1px solid var(--stroke)}
+.file-chip button{border:none;background:none;color:var(--ink-dim);cursor:pointer;font-size:.85rem}
+.table-wrap{overflow-x:auto}
+.dtable{width:100%;border-collapse:collapse;font-size:.83rem;min-width:560px}
+.dtable th{text-align:left;padding:11px 8px;color:var(--ink-dim);font-weight:600;font-size:.7rem;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--stroke)}
+.dtable td{padding:12px 8px;border-bottom:1px solid rgba(255,255,255,.07);vertical-align:middle}
+.dtable tr:hover td{background:rgba(255,255,255,.03)}
+.av{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;margin-right:9px;font-size:.78rem;font-weight:700;color:#1a1a2e;background:linear-gradient(135deg,var(--gold-soft),var(--gold));vertical-align:middle}
+.pill{padding:3px 11px;border-radius:99px;font-size:.7rem;font-weight:600}
+.pill.ok{background:rgba(87,201,139,.16);color:var(--ok)}
+.pill.off{background:rgba(255,122,122,.16);color:var(--fail)}
+.tbtn{padding:6px 13px;border-radius:8px;border:1px solid var(--stroke);cursor:pointer;background:rgba(255,255,255,.06);color:var(--ink);font-size:.74rem}
+.tbtn:hover{background:rgba(212,160,23,.16);border-color:var(--gold)}
+.tbtn.danger:hover{background:rgba(255,122,122,.16);border-color:var(--fail)}
+.btn-wide{width:100%;padding:15px;font-size:1rem;margin-top:20px}
+.mini-thumb{width:44px;height:54px;object-fit:cover;border-radius:7px}
+#pageLoader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:radial-gradient(900px 600px at 80% -10%,#3b1d3f,transparent 60%),linear-gradient(160deg,#101322,#1a1430 55%,#241028);transition:opacity .6s ease,visibility .6s}
+#pageLoader.done{opacity:0;visibility:hidden}
+.pl-inner{text-align:center}
+.pl-inner p{margin-top:16px;color:var(--ink-dim);font-size:.85rem;animation:plBlink 1.6s ease-in-out infinite}
+.pl-bar{width:190px;height:4px;border-radius:99px;margin:24px auto 0;overflow:hidden;background:rgba(255,255,255,.1)}
+.pl-bar span{display:block;height:100%;width:45%;border-radius:99px;background:linear-gradient(90deg,var(--gold-soft),var(--gold));animation:plSlide 1.1s ease-in-out infinite}
+@keyframes plSlide{0%{transform:translateX(-110%)}100%{transform:translateX(330%)}}
+@keyframes plBlink{50%{opacity:.45}}
+.nc-logo .lg-t{stroke-dasharray:44;stroke-dashoffset:44;animation:lgDraw 1.3s ease forwards}
+.nc-logo .lg-n{stroke-dasharray:96;stroke-dashoffset:96;animation:lgDraw 1.7s .45s ease forwards}
+.nc-logo .lg-node{animation:lgPulse 2.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.nc-logo .d1{animation-delay:.5s}.nc-logo .d2{animation-delay:1s}.nc-logo .d3{animation-delay:1.5s}
+.nc-logo .lg-spark{animation:lgSpin 6s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes lgDraw{to{stroke-dashoffset:0}}@keyframes lgPulse{50%{opacity:.4;transform:scale(1.45)}}@keyframes lgSpin{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+footer{text-align:center;padding:26px;color:var(--ink-dim);font-size:.74rem}
+@media (max-width:760px){
+  .nav-burger{display:block}
+  nav{display:none;position:absolute;top:calc(100% + 10px);left:0;right:0;flex-direction:column;align-items:stretch;padding:10px;border-radius:18px;background:rgba(22,20,40,.94);backdrop-filter:blur(20px);border:1px solid var(--stroke);box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  nav.open{display:flex}nav a{padding:13px 16px;font-size:.92rem}
+  .topbar{padding:10px 14px;margin:10px 10px 0}
+  .features{grid-template-columns:1fr}
+  .cat-grid{grid-template-columns:1fr 1fr}
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .detail-grid,.form-grid{grid-template-columns:1fr}
 }
-
-/* ---------- topbar ---------- */
-.topbar { position:sticky; top:14px; z-index:40; max-width:1120px; margin:14px auto 0;
-  padding:12px 22px; display:flex; align-items:center; justify-content:space-between; gap:14px; }
-.brand { display:flex; gap:12px; align-items:center; cursor:pointer; }
-.brand-name { font-family:"Sora"; font-weight:800; font-size:1.1rem; }
-.brand-sub { font-size:.68rem; color:var(--ink-dim); }
-nav { display:flex; gap:4px; align-items:center; }
-nav a { color:var(--ink-dim); text-decoration:none; font-size:.84rem; font-weight:500;
-  padding:8px 14px; border-radius:10px; transition:.2s; cursor:pointer; }
-nav a:hover { color:var(--ink); background:rgba(255,255,255,.07); }
-nav a.active { color:var(--gold-soft); background:rgba(212,160,23,.12); }
-.user-chip { display:flex; align-items:center; gap:9px; padding:6px 8px 6px 14px;
-  border-radius:999px; font-size:.8rem; }
-.user-chip button { border:none; cursor:pointer; width:26px; height:26px; border-radius:50%;
-  background:rgba(255,255,255,.1); color:var(--ink); }
-.user-chip button:hover { background:rgba(255,120,120,.25); }
-
-main { max-width:1120px; margin:0 auto; padding:26px 16px 70px; }
-.screen { display:none; animation:fadein .35s ease; }
-.screen.on { display:block; }
-@keyframes fadein { from{opacity:0; transform:translateY(10px)} to{opacity:1} }
-
-/* ---------- landing ---------- */
-.hero { text-align:center; padding:72px 20px 56px; }
-.hero .logo-big { margin-bottom:26px; }
-.hero h1 { font-size:clamp(2rem,5vw,3.4rem); font-weight:800; line-height:1.15;
-  background:linear-gradient(120deg,#fff 30%,var(--gold-soft) 70%);
-  -webkit-background-clip:text; background-clip:text; color:transparent; }
-.hero p { color:var(--ink-dim); max-width:640px; margin:20px auto 0; font-size:1.02rem; line-height:1.65; }
-.cta-row { display:flex; gap:14px; justify-content:center; margin-top:36px; flex-wrap:wrap; }
-.btn { display:inline-block; padding:14px 30px; border-radius:14px; border:none; cursor:pointer;
-  font-family:"Sora"; font-weight:700; font-size:.95rem; text-decoration:none; transition:.25s; }
-.btn-gold { color:#1a1a2e; background:linear-gradient(135deg,var(--gold-soft),var(--gold));
-  box-shadow:0 10px 28px rgba(212,160,23,.35); }
-.btn-gold:hover { transform:translateY(-2px); box-shadow:0 14px 34px rgba(212,160,23,.5); }
-.btn-ghost { color:var(--ink); background:rgba(255,255,255,.08); border:1px solid var(--stroke); }
-.btn-ghost:hover { background:rgba(255,255,255,.14); }
-.btn:disabled { opacity:.5; cursor:wait; transform:none; }
-
-.stats-band { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:10px 0 40px; }
-.stat { padding:22px; text-align:center; }
-.stat .n { font-family:"Sora"; font-weight:800; font-size:1.7rem; color:var(--gold-soft); }
-.stat .t { font-size:.76rem; color:var(--ink-dim); margin-top:5px; letter-spacing:.4px; }
-.sec-title { text-align:center; font-size:1.5rem; margin:54px 0 8px; }
-.sec-sub { text-align:center; color:var(--ink-dim); font-size:.88rem; margin-bottom:28px; }
-.features { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-.feature { padding:26px; transition:.25s; }
-.feature:hover { transform:translateY(-4px); }
-.feature .ic { font-size:1.6rem; margin-bottom:12px; }
-.feature h3 { font-size:1rem; margin-bottom:8px; }
-.feature p { color:var(--ink-dim); font-size:.83rem; line-height:1.6; }
-.how { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
-.how-step { padding:24px 20px; }
-.how-step .num { width:34px; height:34px; border-radius:50%; display:grid; place-items:center;
-  font-family:"Sora"; font-weight:700; color:#1a1a2e; margin-bottom:14px;
-  background:linear-gradient(135deg,var(--gold-soft),var(--gold)); }
-.how-step h3 { font-size:.92rem; margin-bottom:7px; }
-.how-step p { color:var(--ink-dim); font-size:.79rem; line-height:1.55; }
-
-/* ---------- auth ---------- */
-.auth-wrap { display:grid; place-items:center; min-height:60vh; }
-.auth-card { width:min(410px,94vw); padding:38px 34px; text-align:center; }
-.auth-card h2 { font-size:1.35rem; margin:16px 0 6px; }
-.auth-sub { color:var(--ink-dim); font-size:.85rem; margin-bottom:22px; }
-.g-btn { width:100%; display:flex; align-items:center; justify-content:center; gap:10px;
-  padding:12px; border-radius:12px; border:1px solid var(--stroke); cursor:pointer;
-  background:#fff; color:#1f1f1f; font:600 .9rem "Inter"; }
-.g-btn:hover { background:#f3f3f3; }
-.divider { display:flex; align-items:center; gap:12px; margin:18px 0; color:var(--ink-dim); font-size:.74rem; }
-.divider::before,.divider::after { content:""; flex:1; height:1px; background:var(--stroke); }
-.auth-card form { display:grid; gap:12px; }
-input,select { padding:12px 14px; border-radius:12px; color:var(--ink); font:inherit; font-size:.9rem;
-  background:rgba(255,255,255,.06); border:1px solid var(--stroke); outline:none; transition:.2s; width:100%; }
-input:focus,select:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(212,160,23,.18); }
-select option { background:#1c1730; }
-input[type=color] { padding:2px; height:34px; width:44px; cursor:pointer; border-radius:8px; }
-.form-error { color:var(--fail); font-size:.83rem; min-height:1.2em; margin-top:10px; }
-.auth-toggle { margin-top:16px; font-size:.82rem; color:var(--ink-dim); }
-.auth-toggle a { color:var(--gold-soft); cursor:pointer; font-weight:600; margin-left:5px; }
-.demo-note { margin-top:18px; font-size:.7rem; color:var(--ink-dim); opacity:.7; }
-
-/* ---------- studio ---------- */
-.card { padding:30px; margin-bottom:24px; }
-.card-head { display:flex; gap:16px; align-items:flex-start; margin-bottom:22px; }
-.card-head p { color:var(--ink-dim); font-size:.85rem; margin-top:5px; max-width:660px; }
-.step-no { flex:0 0 34px; height:34px; border-radius:50%; display:grid; place-items:center;
-  font-family:"Sora"; font-weight:700; font-size:.9rem; color:#1a1a2e;
-  background:linear-gradient(135deg,var(--gold-soft),var(--gold)); }
-.slots { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; }
-.slot { position:relative; aspect-ratio:3/4; border-radius:16px; cursor:pointer;
-  border:1.5px dashed rgba(255,255,255,.28); background:rgba(255,255,255,.04);
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
-  transition:.25s; overflow:hidden; }
-.slot:hover { border-color:var(--gold-soft); background:rgba(212,160,23,.08); transform:translateY(-3px); }
-.slot .plus { font-size:1.8rem; color:var(--ink-dim); font-weight:300; }
-.slot .role { font-size:.66rem; color:var(--ink-dim); letter-spacing:.6px; text-transform:uppercase; }
-.slot img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-.slot .remove { position:absolute; top:6px; right:6px; width:24px; height:24px; border-radius:50%;
-  border:none; cursor:pointer; background:rgba(0,0,0,.65); color:#fff; display:none; z-index:2; }
-.slot.filled { border-style:solid; border-color:rgba(212,160,23,.55); }
-.slot.filled .remove { display:block; }
-.slot.filled .plus,.slot.filled .role-mid { display:none; }
-.slot .role-tag { position:absolute; bottom:0; left:0; right:0; padding:5px 8px; z-index:1;
-  background:linear-gradient(transparent,rgba(0,0,0,.75)); font-size:.64rem;
-  letter-spacing:.5px; text-transform:uppercase; color:var(--gold-soft); display:none; }
-.slot.filled .role-tag { display:block; }
-.form-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
-.form-grid label { display:flex; flex-direction:column; gap:7px; font-size:.76rem;
-  color:var(--ink-dim); font-weight:500; }
-.hint { opacity:.6; font-weight:400; }
-.btn-wide { margin-top:24px; width:100%; padding:15px; font-size:1rem; }
-.stepper { display:flex; gap:10px; }
-.pstep { flex:1; padding:13px 10px; text-align:center; font-size:.76rem; color:var(--ink-dim);
-  border-radius:12px; background:rgba(255,255,255,.04); border:1px solid transparent; transition:.3s; }
-.pstep .dot { display:block; width:9px; height:9px; border-radius:50%; margin:0 auto 7px;
-  background:rgba(255,255,255,.25); }
-.pstep.active { border-color:rgba(212,160,23,.5); color:var(--ink); background:rgba(212,160,23,.10); }
-.pstep.active .dot { background:var(--gold); animation:pulse 1.1s ease-in-out infinite; }
-.pstep.done { color:var(--ink); }
-.pstep.done .dot { background:var(--ok); }
-@keyframes pulse { 50%{transform:scale(1.7); opacity:.55} }
-.result-grid { display:grid; grid-template-columns:1fr 1.15fr; gap:26px; }
-.preview-wrap { overflow:hidden; border-radius:16px; border:1px solid var(--stroke);
-  background:rgba(255,255,255,.05); display:grid; place-items:center; min-height:320px; }
-.preview-wrap canvas { width:100%; height:auto; display:block; }
-.metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
-.metric { padding:12px 14px; border-radius:12px; background:rgba(255,255,255,.05); border:1px solid var(--stroke); }
-.metric .k { font-size:.64rem; letter-spacing:.8px; text-transform:uppercase; color:var(--ink-dim); }
-.metric .v { font-family:"Sora"; font-weight:700; font-size:1.02rem; margin-top:3px; }
-.yarn-table { width:100%; border-collapse:collapse; font-size:.84rem; }
-.yarn-table td { padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.08); }
-.swatch { width:34px; height:18px; border-radius:5px; border:1px solid rgba(255,255,255,.3); }
-.downloads { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
-.dl-btn { padding:11px 18px; border-radius:12px; text-decoration:none; font-size:.83rem;
-  font-weight:600; color:var(--ink); background:rgba(255,255,255,.08);
-  border:1px solid var(--stroke); transition:.2s; cursor:pointer; }
-.dl-btn:hover { background:rgba(212,160,23,.18); border-color:var(--gold); }
-.dl-btn.primary { color:#1a1a2e; background:linear-gradient(135deg,var(--gold-soft),var(--gold)); border:none; }
-
-/* ---------- gallery ---------- */
-.filter-chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px; }
-.fchip { padding:8px 16px; border-radius:999px; font-size:.8rem; cursor:pointer; transition:.2s;
-  color:var(--ink-dim); background:rgba(255,255,255,.06); border:1px solid var(--stroke); }
-.fchip:hover { color:var(--ink); }
-.fchip.active { color:#1a1a2e; background:linear-gradient(135deg,var(--gold-soft),var(--gold)); border-color:transparent; font-weight:600; }
-.gal-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
-.gal-card { overflow:hidden; padding:0; transition:.25s; }
-.gal-card:hover { transform:translateY(-4px); }
-.gal-card canvas { width:100%; display:block; aspect-ratio:4/5; }
-.gal-body { padding:14px 16px 16px; }
-.gal-body h3 { font-size:.88rem; }
-.gal-cat { display:inline-block; margin-top:6px; font-size:.64rem; letter-spacing:.5px;
-  text-transform:uppercase; color:var(--gold-soft); background:rgba(212,160,23,.12);
-  padding:3px 10px; border-radius:999px; }
-.gal-body .btn { margin-top:12px; width:100%; padding:9px; font-size:.8rem; text-align:center; }
-
-/* ---------- editor ---------- */
-.ed-top { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
-.ed-top input { max-width:280px; }
-.ed-grid { display:grid; grid-template-columns:1.1fr .9fr; gap:22px; }
-.ed-canvas-wrap { border-radius:16px; border:1px solid var(--stroke); overflow:auto;
-  background:rgba(0,0,0,.25); max-height:640px; display:grid; place-items:center; }
-.ed-canvas-wrap canvas { width:100%; height:auto; display:block; image-rendering:pixelated; }
-.ed-panel h3 { font-size:.9rem; margin:18px 0 10px; color:var(--gold-soft); letter-spacing:.4px; }
-.ed-panel h3:first-child { margin-top:0; }
-.layer-row { display:flex; align-items:center; gap:10px; padding:7px 0;
-  border-bottom:1px solid rgba(255,255,255,.07); font-size:.83rem; }
-.layer-row .pct { margin-left:auto; font-weight:600; font-size:.8rem; }
-.tool-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-.tool-btn { padding:10px 8px; border-radius:10px; border:1px solid var(--stroke); cursor:pointer;
-  background:rgba(255,255,255,.06); color:var(--ink); font-size:.76rem; font-weight:600; transition:.2s; }
-.tool-btn:hover { background:rgba(212,160,23,.16); border-color:var(--gold); }
-.ed-row { display:flex; gap:8px; align-items:center; margin-top:8px; }
-.ed-row input, .ed-row select { flex:1; padding:9px 10px; font-size:.82rem; }
-.ed-row .tool-btn { flex:0 0 auto; }
-.ed-check { display:flex; align-items:center; gap:8px; font-size:.8rem; color:var(--ink-dim); margin-top:10px; cursor:pointer; }
-.ed-check input { width:auto; }
-
-/* ---------- history ---------- */
-.hist-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-.hist-card { padding:0; overflow:hidden; transition:.25s; }
-.hist-card:hover { transform:translateY(-4px); }
-.hist-card img { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; }
-.hist-body { padding:16px 18px; }
-.hist-body h3 { font-size:.95rem; }
-.hist-body p { color:var(--ink-dim); font-size:.76rem; margin-top:5px; }
-.hist-del { float:right; border:none; background:none; color:var(--ink-dim); cursor:pointer; font-size:.9rem; }
-.hist-del:hover { color:var(--fail); }
-.empty { text-align:center; color:var(--ink-dim); padding:60px 0; font-size:.9rem; }
-
-/* ---------- AI chat ---------- */
-.chat-fab { position:fixed; right:22px; bottom:22px; z-index:60; width:58px; height:58px;
-  border-radius:50%; border:none; cursor:pointer; font-size:1.5rem;
-  color:#1a1a2e; background:linear-gradient(135deg,var(--gold-soft),var(--gold));
-  box-shadow:0 12px 30px rgba(212,160,23,.5); transition:.25s; }
-.chat-fab:hover { transform:scale(1.08); }
-.chat-panel { position:fixed; right:22px; bottom:92px; z-index:60; width:min(392px,calc(100vw - 32px));
-  height:min(560px,calc(100vh - 130px)); display:flex; flex-direction:column; overflow:hidden; }
-.chat-head { padding:15px 18px; display:flex; align-items:center; gap:11px;
-  border-bottom:1px solid var(--stroke); background:rgba(255,255,255,.05); }
-.chat-head .dot-on { width:9px; height:9px; border-radius:50%; background:var(--ok); }
-.chat-head h3 { font-size:.9rem; }
-.chat-head small { display:block; color:var(--ink-dim); font-size:.68rem; }
-.chat-head button { margin-left:auto; border:none; background:none; color:var(--ink-dim); cursor:pointer; font-size:1rem; }
-.chat-msgs { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; }
-.msg { max-width:82%; padding:10px 14px; border-radius:15px; font-size:.83rem; line-height:1.5; white-space:pre-wrap; }
-.msg.bot { align-self:flex-start; background:rgba(255,255,255,.08); border:1px solid var(--stroke);
-  border-bottom-left-radius:4px; }
-.msg.me { align-self:flex-end; color:#1a1a2e; font-weight:500;
-  background:linear-gradient(135deg,var(--gold-soft),var(--gold)); border-bottom-right-radius:4px; }
-.msg.typing { color:var(--ink-dim); font-style:italic; }
-.chat-chips { display:flex; gap:7px; padding:0 14px 10px; flex-wrap:wrap; }
-.cchip { padding:6px 12px; border-radius:999px; font-size:.72rem; cursor:pointer;
-  color:var(--gold-soft); background:rgba(212,160,23,.1); border:1px solid rgba(212,160,23,.35); transition:.2s; }
-.cchip:hover { background:rgba(212,160,23,.22); }
-.chat-input { display:flex; gap:8px; padding:12px 14px; border-top:1px solid var(--stroke);
-  background:rgba(255,255,255,.04); }
-.chat-input input { flex:1; padding:10px 14px; font-size:.85rem; }
-.chat-input button { flex:0 0 44px; border:none; border-radius:12px; cursor:pointer; font-size:1rem;
-  color:#1a1a2e; background:linear-gradient(135deg,var(--gold-soft),var(--gold)); }
-
-.hidden { display:none !important; }
-footer { text-align:center; padding:26px; color:var(--ink-dim); font-size:.74rem; }
-
-/* ---------- role tabs (auth) ---------- */
-.role-tabs { display:flex; gap:6px; margin-bottom:20px; padding:5px; border-radius:14px;
-  background:rgba(255,255,255,.05); border:1px solid var(--stroke); }
-.role-tab { flex:1; padding:11px 8px; border-radius:10px; cursor:pointer; text-align:center;
-  font-size:.82rem; font-weight:600; color:var(--ink-dim); transition:.2s; }
-.role-tab:hover { color:var(--ink); }
-.role-tab.active { color:#1a1a2e; background:linear-gradient(135deg,var(--gold-soft),var(--gold)); }
-.admin-hint { margin-top:14px; padding:11px 14px; border-radius:10px; font-size:.74rem; line-height:1.6;
-  background:rgba(212,160,23,.1); border:1px solid rgba(212,160,23,.3); color:var(--gold-soft); text-align:left; }
-.admin-hint b { color:#fff; }
-
-/* ---------- admin badge ---------- */
-.admin-badge { font-size:.58rem; font-weight:700; letter-spacing:.5px; padding:2px 7px;
-  border-radius:6px; background:#8a1538; color:#fff; margin-left:2px; }
-
-/* ---------- two sides section ---------- */
-.sides { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
-.side-card { padding:32px 28px; }
-.side-card .side-ic { font-size:2rem; }
-.side-card h3 { font-size:1.2rem; margin:12px 0 6px; }
-.side-card .side-tag { font-size:.68rem; letter-spacing:.6px; text-transform:uppercase; color:var(--gold-soft); }
-.side-card > p { color:var(--ink-dim); font-size:.85rem; line-height:1.6; margin:12px 0 16px; }
-.side-card ul { list-style:none; margin-bottom:22px; }
-.side-card li { font-size:.83rem; color:var(--ink-dim); padding:6px 0 6px 26px; position:relative; }
-.side-card li::before { content:"✓"; position:absolute; left:0; color:var(--gold-soft); font-weight:700; }
-
-/* ---------- KPI cards ---------- */
-.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px; }
-.kpi { padding:22px; }
-.kpi .kpi-ic { font-size:1.3rem; }
-.kpi .kpi-n { font-family:"Sora"; font-weight:800; font-size:1.9rem; color:var(--gold-soft); margin-top:10px; }
-.kpi .kpi-t { font-size:.72rem; color:var(--ink-dim); margin-top:3px; letter-spacing:.4px; }
-
-/* ---------- admin panels ---------- */
-.admin-2col { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:22px; }
-.panel { padding:24px; }
-.panel h3 { font-size:1rem; margin-bottom:16px; }
-.mini-list { display:flex; flex-direction:column; gap:2px; }
-.mini-item { display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.07); }
-.mini-item img { width:42px; height:52px; object-fit:cover; border-radius:7px; }
-.mini-item .mi-body { flex:1; min-width:0; }
-.mini-item .mi-body b { font-size:.85rem; display:block; }
-.mini-item .mi-body span { font-size:.74rem; color:var(--ink-dim); }
-.mini-item .mi-meta { font-size:.72rem; color:var(--ink-dim); text-align:right; white-space:nowrap; }
-
-/* ---------- bar chart ---------- */
-.bar-row { display:grid; grid-template-columns:112px 1fr 40px; align-items:center; gap:10px; margin-bottom:12px; font-size:.8rem; }
-.bar-track { height:12px; border-radius:99px; background:rgba(255,255,255,.07); overflow:hidden; }
-.bar-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,var(--gold-soft),var(--gold)); width:0; transition:width .9s ease; }
-.bar-val { text-align:right; font-weight:600; color:var(--ink-dim); }
-
-/* ---------- data table ---------- */
-.table-wrap { overflow-x:auto; }
-.dtable { width:100%; border-collapse:collapse; font-size:.83rem; min-width:520px; }
-.dtable th { text-align:left; padding:11px 8px; color:var(--ink-dim); font-weight:600; font-size:.7rem;
-  letter-spacing:.5px; text-transform:uppercase; border-bottom:1px solid var(--stroke); }
-.dtable td { padding:12px 8px; border-bottom:1px solid rgba(255,255,255,.07); }
-.dtable tr:hover td { background:rgba(255,255,255,.03); }
-.av { display:inline-grid; place-items:center; width:30px; height:30px; border-radius:50%; margin-right:9px;
-  font-size:.78rem; font-weight:700; color:#1a1a2e; background:linear-gradient(135deg,var(--gold-soft),var(--gold)); vertical-align:middle; }
-.pill { padding:3px 11px; border-radius:99px; font-size:.7rem; font-weight:600; }
-.pill.ok { background:rgba(87,201,139,.16); color:var(--ok); }
-.pill.off { background:rgba(255,122,122,.16); color:var(--fail); }
-.tbtn { padding:6px 13px; border-radius:8px; border:1px solid var(--stroke); cursor:pointer;
-  background:rgba(255,255,255,.06); color:var(--ink); font-size:.74rem; }
-.tbtn:hover { background:rgba(212,160,23,.16); border-color:var(--gold); }
-
-/* ---------- machine cards ---------- */
-.mach-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:8px; }
-.mach { padding:20px; }
-.mach h4 { font-size:.92rem; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
-.mach .mrow { display:flex; justify-content:space-between; font-size:.8rem; padding:5px 0; color:var(--ink-dim); }
-.mach .mrow b { color:var(--ink); }
-.section-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:12px; flex-wrap:wrap; }
-.section-heading h2 { font-size:1.3rem; }
-
-@media (max-width:760px) {
-  .kpi-row { grid-template-columns:1fr 1fr; }
-  .admin-2col, .sides, .mach-grid { grid-template-columns:1fr; }
-}
-
-/* ---------- animated AI logo ---------- */
-.ai-tag { background:linear-gradient(120deg,#eecb6b,#d4a017);
-  -webkit-background-clip:text; background-clip:text; color:transparent; }
-.logo-big { display:inline-block; }
-.nc-logo { display:block; }
-.nc-logo .lg-t { stroke-dasharray:44; stroke-dashoffset:44; animation:lgDraw 1.3s ease forwards; }
-.nc-logo .lg-n { stroke-dasharray:96; stroke-dashoffset:96; animation:lgDraw 1.7s .45s ease forwards; }
-.nc-logo .lg-node { animation:lgPulse 2.8s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
-.nc-logo .d1 { animation-delay:.5s } .nc-logo .d2 { animation-delay:1s } .nc-logo .d3 { animation-delay:1.5s }
-.nc-logo .lg-spark { animation:lgSpin 6s linear infinite; transform-box:fill-box; transform-origin:center; }
-@keyframes lgDraw { to { stroke-dashoffset:0 } }
-@keyframes lgPulse { 50% { opacity:.4; transform:scale(1.45) } }
-@keyframes lgSpin { to { transform:rotate(360deg) } }
-
-/* ---------- page loader ---------- */
-#pageLoader { position:fixed; inset:0; z-index:100; display:grid; place-items:center;
-  background:
-    radial-gradient(900px 600px at 80% -10%, #3b1d3f 0%, transparent 60%),
-    linear-gradient(160deg,#101322 0%,#1a1430 55%,#241028 100%);
-  transition:opacity .6s ease, visibility .6s; }
-#pageLoader.done { opacity:0; visibility:hidden; }
-.pl-inner { text-align:center; }
-.pl-inner .nc-logo { margin:0 auto; }
-.pl-inner p { margin-top:16px; color:var(--ink-dim); font-size:.85rem; letter-spacing:.4px;
-  animation:plBlink 1.6s ease-in-out infinite; }
-.pl-bar { width:190px; height:4px; border-radius:99px; margin:24px auto 0; overflow:hidden;
-  background:rgba(255,255,255,.1); }
-.pl-bar span { display:block; height:100%; width:45%; border-radius:99px;
-  background:linear-gradient(90deg,var(--gold-soft),var(--gold));
-  animation:plSlide 1.1s ease-in-out infinite; }
-@keyframes plSlide { 0%{transform:translateX(-110%)} 100%{transform:translateX(330%)} }
-@keyframes plBlink { 50%{opacity:.45} }
-
-/* ---------- scroll reveal + micro animations ---------- */
-.rv { opacity:0; transform:translateY(26px); transition:opacity .7s ease, transform .7s ease; }
-.rv-in { opacity:1; transform:none; }
-.hero h1 { background-size:200% auto; animation:heroShine 7s linear infinite; }
-@keyframes heroShine { to { background-position:200% center } }
-.chat-fab { overflow:visible; }
-.chat-fab::after { content:""; position:absolute; inset:-6px; border-radius:50%;
-  border:2px solid rgba(212,160,23,.45); animation:fabRing 2.2s ease-out infinite; }
-@keyframes fabRing { 0%{transform:scale(.82); opacity:1} 100%{transform:scale(1.55); opacity:0} }
-
-/* ---------- mobile navigation + responsive ---------- */
-.nav-burger { display:none; cursor:pointer; width:42px; height:42px; border-radius:12px;
-  font-size:1.15rem; color:var(--ink); background:rgba(255,255,255,.08); border:1px solid var(--stroke); }
-.top-right { display:flex; align-items:center; gap:10px; }
-@media (max-width:760px) {
-  .nav-burger { display:block; }
-  nav { display:none; position:absolute; top:calc(100% + 10px); left:0; right:0;
-    flex-direction:column; align-items:stretch; padding:10px; border-radius:18px;
-    background:rgba(22,20,40,.94); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-    border:1px solid var(--stroke); box-shadow:0 18px 50px rgba(0,0,0,.5); }
-  nav.open { display:flex; }
-  nav a { padding:13px 16px; font-size:.92rem; }
-  .topbar { padding:10px 14px; margin:10px 10px 0; }
-  .hero { padding:46px 6px 40px; }
-  .hero p { font-size:.92rem; }
-  .card { padding:20px 16px; }
-  .card-head { gap:12px; }
-  .ed-top { flex-direction:column; align-items:stretch; }
-  .ed-top input { max-width:none; }
-  .ed-top > div:first-child { flex-wrap:wrap; }
-  .tool-grid { grid-template-columns:1fr 1fr; }
-  .metrics { grid-template-columns:1fr 1fr; }
-}
-@media (max-width:480px) {
-  .brand-sub { display:none; }
-  .stats-band { grid-template-columns:1fr 1fr; gap:10px; }
-  .stat { padding:16px 10px; } .stat .n { font-size:1.3rem; }
-  .gal-grid { grid-template-columns:1fr 1fr; gap:10px; }
-  .gal-body { padding:10px 12px 12px; }
-  .gal-body .btn { padding:8px; font-size:.72rem; }
-  .slots { grid-template-columns:repeat(3,1fr); gap:8px; }
-  .form-grid { grid-template-columns:1fr; }
-  .how, .features, .hist-grid { grid-template-columns:1fr; }
-  .downloads { gap:7px; } .dl-btn { padding:10px 13px; font-size:.76rem; }
-  .chat-panel { right:8px; left:8px; width:auto; bottom:84px; height:min(540px, calc(100vh - 110px)); }
-  .chat-fab { right:14px; bottom:14px; width:52px; height:52px; }
-  footer { font-size:.66rem; }
-}
-
-/* ---------- printable design card ---------- */
-#printCard { display:none; }
-@media print {
-  body > *:not(#printCard) { display:none !important; }
-  body { background:#fff !important; }
-  #printCard { display:block !important; color:#111; font-family:Arial,sans-serif; padding:28px; }
-  #printCard .pc-head { background:#1a1a2e; color:#fff; padding:18px 22px; border-radius:8px; }
-  #printCard .pc-head h1 { font-size:19px; margin:0; }
-  #printCard .pc-head small { opacity:.75; }
-  #printCard .pc-specs { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; margin:22px 0; }
-  #printCard .pc-spec b { display:block; font-size:15px; }
-  #printCard .pc-spec span { font-size:10px; color:#666; letter-spacing:.6px; }
-  #printCard table { width:100%; border-collapse:collapse; font-size:12px; margin:10px 0 20px; }
-  #printCard td,#printCard th { border-bottom:1px solid #ccc; padding:7px 5px; text-align:left; }
-  #printCard .pc-sw { width:36px; height:15px; border:1px solid #999; display:inline-block; }
-  #printCard img { max-width:100%; max-height:400px; }
-}
-
-@media (max-width:900px) {
-  .stats-band,.how { grid-template-columns:1fr 1fr; }
-  .features,.hist-grid { grid-template-columns:1fr; }
-  .gal-grid { grid-template-columns:1fr 1fr; }
-  .slots { grid-template-columns:repeat(3,1fr); }
-  .form-grid { grid-template-columns:1fr 1fr; }
-  .result-grid,.ed-grid { grid-template-columns:1fr; }
-  nav a { padding:8px 9px; font-size:.78rem; }
-  .stepper { flex-wrap:wrap; } .pstep { flex:1 1 30%; }
-}
+@media (max-width:480px){.brand-sub{display:none}.cat-grid{grid-template-columns:1fr 1fr;gap:10px}}
 </style>
 </head>
 <body>
-<!-- ============ PRIVATE ACCESS LOCK ============ -->
-<div id="nc-gate" style="position:fixed;inset:0;z-index:9999;display:grid;place-items:center;
-  background:radial-gradient(900px 600px at 80% -10%,#3b1d3f,transparent 60%),linear-gradient(160deg,#101322,#1a1430 55%,#241028);
-  font-family:-apple-system,'Segoe UI',Roboto,system-ui,sans-serif;color:#eef0f6;">
-  <div style="width:min(380px,92vw);padding:36px 30px;text-align:center;border-radius:22px;
-    background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.04));
-    border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(20px);
-    box-shadow:0 18px 50px rgba(0,0,0,.4);">
-    <svg width="58" height="58" viewBox="0 0 64 64" style="margin-bottom:14px">
-      <rect x="2" y="2" width="60" height="60" rx="15" fill="#1a1a2e" stroke="#d4a017" stroke-width="2.5"/>
-      <path d="M22 44 V20 L42 44 V20" fill="none" stroke="#d4a017" stroke-width="4.4"
-        stroke-linecap="round" stroke-linejoin="round"/></svg>
+<!-- ===== PRIVATE ACCESS LOCK ===== -->
+<div id="nc-gate" style="position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:radial-gradient(900px 600px at 80% -10%,#3b1d3f,transparent 60%),linear-gradient(160deg,#101322,#1a1430 55%,#241028);font-family:-apple-system,'Segoe UI',Roboto,system-ui,sans-serif;color:#eef0f6">
+  <div style="width:min(380px,92vw);padding:36px 30px;text-align:center;border-radius:22px;background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(20px);box-shadow:0 18px 50px rgba(0,0,0,.4)">
+    <svg width="58" height="58" viewBox="0 0 64 64" style="margin-bottom:14px"><rect x="2" y="2" width="60" height="60" rx="15" fill="#1a1a2e" stroke="#d4a017" stroke-width="2.5"/><path d="M22 44 V20 L42 44 V20" fill="none" stroke="#d4a017" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <h2 style="font-family:'Sora',sans-serif;font-size:1.25rem;margin-bottom:6px">🔒 Private Access</h2>
-    <p style="color:rgba(238,240,246,.62);font-size:.85rem;margin-bottom:20px">
-      Enter the password to open NewCraft AI.</p>
-    <form id="nc-gate-form">
-      <input id="nc-gate-pass" type="password" placeholder="Password" autocomplete="current-password"
-        style="width:100%;padding:12px 14px;border-radius:12px;color:#eef0f6;font-size:.95rem;
-        background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);outline:none;text-align:center;">
-      <button type="submit" style="width:100%;margin-top:12px;padding:13px;border:none;border-radius:12px;
-        cursor:pointer;font-family:'Sora',sans-serif;font-weight:700;font-size:.95rem;color:#1a1a2e;
-        background:linear-gradient(135deg,#eecb6b,#d4a017);">Unlock →</button>
-    </form>
+    <p style="color:rgba(238,240,246,.62);font-size:.85rem;margin-bottom:20px">Enter the password to open NewCraft AI.</p>
+    <form id="nc-gate-form"><input id="nc-gate-pass" type="password" placeholder="Password" autocomplete="current-password" style="width:100%;padding:12px 14px;border-radius:12px;color:#eef0f6;font-size:.95rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);outline:none;text-align:center">
+      <button type="submit" style="width:100%;margin-top:12px;padding:13px;border:none;border-radius:12px;cursor:pointer;font-family:'Sora',sans-serif;font-weight:700;font-size:.95rem;color:#1a1a2e;background:linear-gradient(135deg,#eecb6b,#d4a017)">Unlock →</button></form>
     <p id="nc-gate-err" style="color:#ff7a7a;font-size:.82rem;min-height:1.2em;margin-top:12px"></p>
   </div>
 </div>
 <script>
-(function () {
-  var HASH = "0b97313d6b5ddec18f0b4f349ef3ca844abcee09744ee66e323f467fcd8ef37a";
-  var gate = document.getElementById('nc-gate');
-  document.documentElement.style.overflow = 'hidden';
-  function unlock() {
-    gate.remove();
-    document.documentElement.style.overflow = '';
-    try { sessionStorage.setItem('nc_gate_ok', '1'); } catch (e) {}
-  }
-  try { if (sessionStorage.getItem('nc_gate_ok') === '1') return unlock(); } catch (e) {}
-  async function sha256(str) {
-    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(function (b) {
-      return b.toString(16).padStart(2, '0'); }).join('');
-  }
-  document.getElementById('nc-gate-form').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    var v = document.getElementById('nc-gate-pass').value;
-    var err = document.getElementById('nc-gate-err');
-    try {
-      if (await sha256(v) === HASH) unlock();
-      else { err.textContent = 'Wrong password. Try again.';
-        document.getElementById('nc-gate-pass').value = ''; }
-    } catch (_) { err.textContent = 'This browser cannot verify the password.'; }
-  });
-  document.getElementById('nc-gate-pass').focus();
-})();
+(function(){var HASH="0b97313d6b5ddec18f0b4f349ef3ca844abcee09744ee66e323f467fcd8ef37a";var gate=document.getElementById('nc-gate');document.documentElement.style.overflow='hidden';
+function unlock(){gate.remove();document.documentElement.style.overflow='';try{sessionStorage.setItem('nc_gate_ok','1')}catch(e){}}
+try{if(sessionStorage.getItem('nc_gate_ok')==='1')return unlock()}catch(e){}
+async function sha256(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('')}
+document.getElementById('nc-gate-form').addEventListener('submit',async function(e){e.preventDefault();var v=document.getElementById('nc-gate-pass').value;var err=document.getElementById('nc-gate-err');try{if(await sha256(v)===HASH)unlock();else{err.textContent='Wrong password. Try again.';document.getElementById('nc-gate-pass').value=''}}catch(_){err.textContent='This browser cannot verify the password.'}});
+document.getElementById('nc-gate-pass').focus();})();
 </script>
-<div class="bg-blob blob-gold"></div>
-<div class="bg-blob blob-rose"></div>
-<div class="bg-blob blob-teal"></div>
 
-<!-- ================= PAGE LOADER ================= -->
-<div id="pageLoader">
-  <div class="pl-inner">
-    <span id="logoLoader"></span>
-    <div class="pl-bar"><span></span></div>
-    <p>Weaving your studio…</p>
-  </div>
-</div>
+<div class="bg-blob blob-gold"></div><div class="bg-blob blob-rose"></div><div class="bg-blob blob-teal"></div>
+<div id="pageLoader"><div class="pl-inner"><span id="logoLoader"></span><div class="pl-bar"><span></span></div><p>Opening the catalog…</p></div></div>
 
-<!-- ================= TOPBAR ================= -->
 <header class="glass topbar">
-  <div class="brand" onclick="go('home')">
-    <span id="logoTop"></span>
-    <div>
-      <div class="brand-name">NewCraft&nbsp;<span class="ai-tag">AI</span></div>
-      <div class="brand-sub">AI Jacquard Design Studio · Surat</div>
-    </div>
-  </div>
-  <nav id="mainNav">
-    <a data-nav="home" onclick="go('home')">Home</a>
-    <a data-nav="gallery" onclick="go('gallery')">Gallery</a>
-    <a data-nav="studio" onclick="go('studio')">Studio</a>
-    <a data-nav="history" onclick="go('history')">My Designs</a>
-  </nav>
-  <div class="top-right">
-    <div id="navAuth">
-      <a class="btn btn-gold" style="padding:10px 22px;font-size:.84rem" onclick="go('auth')">Sign In</a>
-    </div>
-    <button class="nav-burger" id="navBurger" aria-label="Menu">☰</button>
-  </div>
+  <div class="brand" onclick="go('home')"><span id="logoTop"></span>
+    <div><div class="brand-name">NewCraft&nbsp;<span class="ai-tag">AI</span></div><div class="brand-sub">Jacquard Design Catalog · Surat</div></div></div>
+  <nav id="mainNav"></nav>
+  <div class="top-right"><div id="navAuth"></div><button class="nav-burger" id="navBurger" aria-label="Menu">☰</button></div>
 </header>
 
 <main>
-<!-- ================= HOME ================= -->
+<!-- HOME -->
 <section class="screen" id="screen-home">
-  <div class="hero">
-    <span class="logo-big" id="logoHero"></span>
-    <h1>From 5 Photos to a<br>Loom-Ready Design in Minutes</h1>
-    <p>NewCraft AI blends your reference images into one industry-standard jacquard
-      design — then compiles the exact production files your loom unit needs:
-      indexed hook-matrix BMP, technical design card, yarn allocation math. Built
-      for the Surat textile market.</p>
-    <div class="cta-row">
-      <a class="btn btn-gold" onclick="go('studio')">✦ Start Designing</a>
-      <a class="btn btn-ghost" onclick="go('gallery')">Browse Design Gallery</a>
-    </div>
+  <div class="hero"><span class="logo-big" id="logoHero"></span>
+    <h1>The Jacquard Design<br>Catalog for Surat</h1>
+    <p>Browse ready-made, production-grade jacquard designs uploaded by NewCraft — saree palav, borders, blouse, lehenga, butti and piece-cloth. Download the complete production files (BMP, PDF, PNG, JPG, RAR) once access is granted.</p>
+    <div class="cta-row"><a class="btn btn-gold" onclick="go('catalog')">✦ Browse Designs</a><a class="btn btn-ghost" onclick="App.gotoLogin('admin')">Admin Login</a></div>
   </div>
-  <div class="stats-band">
-    <div class="glass stat"><div class="n">5,376</div><div class="t">WARP HOOKS SUPPORTED</div></div>
-    <div class="glass stat"><div class="n">1 px = 1</div><div class="t">HOOK PIXEL PRECISION</div></div>
-    <div class="glass stat"><div class="n">K 2–8</div><div class="t">WEAVABLE YARN COLORS</div></div>
-    <div class="glass stat"><div class="n">3 भाषा</div><div class="t">AI ASSISTANT · EN / हिंदी / ગુજરાતી</div></div>
-  </div>
-  <h2 class="sec-title">Everything the Loom Unit Needs</h2>
-  <p class="sec-sub">Not just a picture — the complete production package.</p>
+  <h2 class="sec-title">How It Works</h2><p class="sec-sub">Simple for buyers, powerful for the catalog owner.</p>
   <div class="features">
-    <div class="glass feature"><div class="ic">🧬</div><h3>5-Image AI Blending</h3>
-      <p>Upload structure, motif, texture, colour and mood references. The engine fuses
-      them into one seamless repeat design.</p></div>
-    <div class="glass feature"><div class="ic">🎛</div><h3>Deep Design Editor</h3>
-      <p>Recolor every yarn layer, mirror panels, scale buttis, change colour count,
-      resize the hook matrix — with undo and save-as-copy.</p></div>
-    <div class="glass feature"><div class="ic">💬</div><h3>AI Assistant · 3 Languages</h3>
-      <p>Tell it changes in English, हिंदी or ગુજરાતી — "ground lal karo", "જરી ગોલ્ડ કરો" —
-      and it applies them to your design instantly.</p></div>
-    <div class="glass feature"><div class="ic">🧵</div><h3>Hook-Matrix Precision</h3>
-      <p>Nearest-neighbour resize to your machine's exact hook count — one pixel
-      becomes one warp hook. No blur, no invented colours.</p></div>
-    <div class="glass feature"><div class="ic">📄</div><h3>Technical Design Card</h3>
-      <p>Factory spec sheet: Total Hooks, Total Cards, Loom Pick, Reed, Total Inches
-      and the yarn AVG% table. Print-ready.</p></div>
-    <div class="glass feature"><div class="ic">💾</div><h3>Production BMP Export</h3>
-      <p>True 8-bit indexed BMP where every colour index is a yarn command — readable
-      by card-punching software directly.</p></div>
-  </div>
-  <h2 class="sec-title" id="how">How It Works</h2>
-  <p class="sec-sub">Four steps from inspiration to loom.</p>
-  <div class="how">
-    <div class="glass how-step"><div class="num">1</div><h3>Upload or Pick</h3>
-      <p>Upload 5 references in the Studio, or start from a ready design in the Gallery —
-      Butti, Border, Palav, Blouse, Lehenga, Piece Cloth.</p></div>
-    <div class="glass how-step"><div class="num">2</div><h3>AI Generates</h3>
-      <p>Blend → mirror → seamless repeat → K-Means yarn quantization → exact hook matrix.</p></div>
-    <div class="glass how-step"><div class="num">3</div><h3>Edit Deeply</h3>
-      <p>Open the editor or just tell the AI assistant your changes in your own language.</p></div>
-    <div class="glass how-step"><div class="num">4</div><h3>Download &amp; Weave</h3>
-      <p>Indexed BMP for the machine, design card for the master, render for the party.</p></div>
-  </div>
-  <h2 class="sec-title">Two Sides, One Platform</h2>
-  <p class="sec-sub">The customer creates &amp; downloads designs. The admin runs the whole business.</p>
-  <div class="sides">
-    <div class="glass side-card rv">
-      <div class="side-ic">👤</div>
-      <div class="side-tag">Customer Side</div>
-      <h3>Design Studio</h3>
-      <p>What your buyers use to turn ideas into loom-ready files — no technical skill needed.</p>
-      <ul>
-        <li>Upload 5 references or pick from the gallery</li>
-        <li>AI blends into a production design</li>
-        <li>Deep editor + trilingual AI assistant</li>
-        <li>Download BMP, design card &amp; render</li>
-      </ul>
-      <a class="btn btn-gold" style="width:100%;text-align:center" onclick="App.gotoLogin('customer')">Enter Customer Side →</a>
-    </div>
-    <div class="glass side-card rv">
-      <div class="side-ic">🛡</div>
-      <div class="side-tag">Admin Side</div>
-      <h3>Business Dashboard</h3>
-      <p>What you — the owner — use to run and monitor the entire platform.</p>
-      <ul>
-        <li>Live KPIs: customers, designs, sections</li>
-        <li>Manage every customer account</li>
-        <li>See &amp; audit all designs on the platform</li>
-        <li>Configure jacquard machine profiles</li>
-      </ul>
-      <a class="btn btn-ghost" style="width:100%;text-align:center" onclick="App.gotoLogin('admin')">Enter Admin Side →</a>
-    </div>
-  </div>
-
-  <div class="hero" style="padding-top:60px">
-    <h2 style="font-size:1.6rem">Ready to craft?</h2>
-    <div class="cta-row"><a class="btn btn-gold" onclick="go('studio')">✦ Open the Design Studio</a></div>
+    <div class="glass feature"><div class="ic">🖼️</div><h3>Browse the Catalog</h3><p>Customers explore every design the admin has published, organised by product section with a preview of each.</p></div>
+    <div class="glass feature"><div class="ic">📦</div><h3>Multi-Format Files</h3><p>Each design carries its full production package — PNG, JPG, PDF design card, indexed BMP and RAR/ZIP source — ready to download.</p></div>
+    <div class="glass feature"><div class="ic">🔐</div><h3>Download by Permission</h3><p>Downloads open only for customers the admin has approved. Everyone else can view but not download until granted access.</p></div>
   </div>
 </section>
 
-<!-- ================= AUTH ================= -->
+<!-- AUTH -->
 <section class="screen" id="screen-auth">
   <div class="auth-wrap"><div class="glass auth-card">
     <span id="logoAuth"></span>
-    <div class="role-tabs">
-      <div class="role-tab active" id="roleTabCustomer" onclick="App.setAuthRole('customer')">👤 Customer</div>
-      <div class="role-tab" id="roleTabAdmin" onclick="App.setAuthRole('admin')">🛡 Admin</div>
-    </div>
-    <h2 id="authTitle">Welcome back</h2>
-    <p class="auth-sub" id="authSub">Sign in to create production designs.</p>
-    <div class="admin-hint hidden" id="adminHint">
-      🛡 <b>Admin demo login</b><br>Email: <b>admin@newcraft.ai</b><br>Password: <b>admin123</b>
-    </div>
-    <button class="g-btn" id="googleBtn" onclick="App.googleDemo()">
-      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C41 35.4 44 30.2 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
-      Continue with Google
-    </button>
-    <div class="divider" id="authDivider"><span>or continue with email</span></div>
+    <div class="role-tabs"><div class="role-tab active" id="roleTabCustomer" onclick="App.setAuthRole('customer')">👤 Customer</div><div class="role-tab" id="roleTabAdmin" onclick="App.setAuthRole('admin')">🛡 Admin</div></div>
+    <h2 id="authTitle">Welcome back</h2><p class="auth-sub" id="authSub">Sign in to browse and download designs.</p>
+    <div class="admin-hint hidden" id="adminHint">🛡 <b>Admin demo login</b><br>Email: <b>admin@newcraft.ai</b><br>Password: <b>admin123</b></div>
     <form id="authForm">
       <input id="aName" type="text" placeholder="Full name" class="hidden">
       <input id="aEmail" type="email" placeholder="Email address" required>
-      <input id="aPass" type="password" placeholder="Password (min 8 characters)" required minlength="8">
-      <button type="submit" class="btn btn-gold btn-wide" style="margin-top:6px" id="authSubmit">Sign In</button>
+      <input id="aPass" type="password" placeholder="Password (min 6 characters)" required minlength="6">
+      <button type="submit" class="btn btn-gold" id="authSubmit">Sign In</button>
     </form>
     <div class="form-error" id="authError"></div>
-    <p class="auth-toggle" id="authToggl-wrap"><span id="authToggleTxt">New to NewCraft?</span>
-      <a id="authToggle">Create an account</a></p>
-    <p class="demo-note">Demo website — accounts are stored only in your own browser.</p>
+    <p class="auth-toggle" id="authToggleWrap"><span id="authToggleTxt">New here?</span><a id="authToggle">Create an account</a></p>
   </div></div>
 </section>
 
-<!-- ================= GALLERY ================= -->
-<section class="screen" id="screen-gallery">
+<!-- CATALOG (customer) -->
+<section class="screen" id="screen-catalog">
   <div class="glass card">
-    <div class="card-head"><span class="step-no">✦</span><div>
-      <h2>Design Gallery</h2>
-      <p>Ready-made designs for every product section. Open any of them in the deep editor —
-      recolor, mirror, scale, re-quantize — or tell the AI assistant your changes.</p>
-    </div></div>
-    <div class="filter-chips" id="galFilters"></div>
-    <div class="gal-grid" id="galGrid"></div>
+    <div class="section-heading"><div><h2>Design Catalog</h2><p style="color:var(--ink-dim);font-size:.85rem;margin-top:5px" id="catalogPerm"></p></div></div>
+    <div class="filter-chips" id="catFilters"></div>
+    <div class="cat-grid" id="catGrid"></div>
+    <div class="empty hidden" id="catEmpty">No designs published yet. Please check back soon.</div>
   </div>
 </section>
 
-<!-- ================= STUDIO ================= -->
-<section class="screen" id="screen-studio">
+<!-- DESIGN DETAIL -->
+<section class="screen" id="screen-detail">
   <div class="glass card">
-    <div class="card-head"><span class="step-no">1</span><div>
-      <h2>Reference Images</h2>
-      <p>Upload up to 5 mood / reference images. Each slot tells the AI what to take from that image.</p>
-    </div></div>
-    <div class="slots" id="slots"></div>
-  </div>
-  <div class="glass card">
-    <div class="card-head"><span class="step-no">2</span><div>
-      <h2>Design &amp; Loom Specification</h2>
-      <p>These values map 1:1 onto the jacquard machine — 1 pixel = 1 warp hook.</p>
-    </div></div>
-    <div class="form-grid">
-      <label>Design Title<input id="fTitle" type="text" placeholder="Floral Panel 01"></label>
-      <label>Party Name<input id="fParty" type="text" placeholder="Meet Textiles"></label>
-      <label>Section
-        <select id="fLayout"><option value="Dress Panel">Dress Panel</option>
-          <option value="Saree Palav">Saree Palav</option><option value="Saree Border">Saree Border</option>
-          <option value="Blouse">Blouse</option><option value="Lehenga">Lehenga</option>
-          <option value="Piece Cloth">Piece Cloth</option><option value="Butti">All-over Butti</option>
-        </select></label>
-      <label>Colours (K)
-        <select id="fColors"><option>2</option><option>3</option><option selected>4</option>
-          <option>5</option><option>6</option><option>7</option><option>8</option></select></label>
-      <label>Total Hooks <span class="hint">(browser demo: max 2688)</span>
-        <input id="fHooks" type="number" value="1344" min="64" max="2688"></label>
-      <label>Total Cards <span class="hint">(blank = auto)</span>
-        <input id="fCards" type="number" placeholder="auto" min="64" max="4400"></label>
-      <label>Reed<input id="fReed" type="number" value="108" min="1"></label>
-      <label>Loom Pick<input id="fPick" type="number" value="48" min="1"></label>
-    </div>
-    <button class="btn btn-gold btn-wide" id="btnGenerate">✦ &nbsp;Generate Production Design</button>
-    <div class="form-error" id="formError"></div>
-  </div>
-  <div class="glass card hidden" id="progressCard">
-    <div class="card-head"><span class="step-no">3</span><div>
-      <h2>Pipeline Progress</h2><p id="jobRef"></p></div></div>
-    <div class="stepper">
-      <div class="pstep" data-s="0"><span class="dot"></span>Queued</div>
-      <div class="pstep" data-s="1"><span class="dot"></span>AI Blending</div>
-      <div class="pstep" data-s="2"><span class="dot"></span>Hook Matrix</div>
-      <div class="pstep" data-s="3"><span class="dot"></span>Documents</div>
-      <div class="pstep" data-s="4"><span class="dot"></span>Ready</div>
-    </div>
-  </div>
-  <div class="glass card hidden" id="resultCard">
-    <div class="card-head"><span class="step-no">4</span><div>
-      <h2>Production Package</h2><p>Factory-ready deliverables for the loom unit.</p></div></div>
-    <div class="result-grid">
-      <div class="preview-wrap"><canvas id="outCanvas"></canvas></div>
+    <a class="fchip" style="display:inline-block;margin-bottom:18px" onclick="go('catalog')">← Back to catalog</a>
+    <div class="detail-grid">
+      <div class="detail-thumb"><img id="dThumb" alt=""></div>
       <div>
-        <div class="metrics" id="metrics"></div>
-        <h3 style="font-size:.95rem;margin-bottom:10px">Yarn Layer Allocation</h3>
-        <table class="yarn-table"><tbody id="yarnRows"></tbody></table>
-        <div class="downloads">
-          <button class="dl-btn primary" onclick="Editor.fromStudio()">🎛 Open in Deep Editor</button>
-          <button class="dl-btn" onclick="App.printCard()">📄 Design Card</button>
-          <button class="dl-btn" onclick="App.downloadBMP()">🧵 Production BMP</button>
-          <button class="dl-btn" onclick="App.downloadPNG()">🖼 Render PNG</button>
-        </div>
+        <span class="cat-cat" id="dCat"></span>
+        <h2 style="font-size:1.5rem;margin:10px 0 6px" id="dName"></h2>
+        <p style="color:var(--ink-dim);font-size:.88rem;line-height:1.6;margin-bottom:18px" id="dDesc"></p>
+        <div id="dPerm"></div>
+        <h3 style="font-size:.95rem;margin:6px 0 12px">Production Files</h3>
+        <div id="dFiles"></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ================= EDITOR ================= -->
-<section class="screen" id="screen-editor">
-  <div class="glass card">
-    <div class="ed-top">
-      <div style="display:flex;align-items:center;gap:12px">
-        <span class="step-no">🎛</span>
-        <input id="edTitle" type="text" placeholder="Design title">
-        <span class="gal-cat" id="edCat">Section</span>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="dl-btn" onclick="Editor.undo()">↶ Undo</button>
-        <button class="dl-btn" onclick="Editor.saveCopy()">⧉ Save as Copy</button>
-        <button class="dl-btn primary" onclick="Editor.save()">💾 Save Design</button>
-      </div>
-    </div>
-    <div class="ed-grid">
-      <div>
-        <div class="ed-canvas-wrap"><canvas id="edCanvas"></canvas></div>
-        <label class="ed-check"><input type="checkbox" id="edTile" onchange="Editor.paint()">
-          Show 2×2 repeat preview (checks seamless tiling)</label>
-        <div class="metrics" id="edMetrics" style="margin-top:14px"></div>
-      </div>
-      <div class="ed-panel">
-        <h3>YARN LAYERS — CLICK A COLOUR TO CHANGE IT</h3>
-        <div id="edLayers"></div>
-        <h3>TRANSFORMS</h3>
-        <div class="tool-grid">
-          <button class="tool-btn" onclick="Editor.flipH()">⇋ Flip Horizontal</button>
-          <button class="tool-btn" onclick="Editor.flipV()">⇵ Flip Vertical</button>
-          <button class="tool-btn" onclick="Editor.rotate180()">⟳ Rotate 180°</button>
-          <button class="tool-btn" onclick="Editor.mirrorPanel()">🪞 Mirror Panel</button>
-          <button class="tool-btn" onclick="Editor.scalePattern(0.72)">🔍− Butti Smaller</button>
-          <button class="tool-btn" onclick="Editor.scalePattern(1.4)">🔍+ Butti Bigger</button>
-          <button class="tool-btn" onclick="Editor.invertLayers()">🔄 Swap Ground/Zari</button>
-          <button class="tool-btn" onclick="Editor.variation()">✨ New AI Variation</button>
-          <button class="tool-btn" onclick="Chat.open()">💬 Ask AI Assistant</button>
-        </div>
-        <h3>COLOUR COUNT (RE-QUANTIZE)</h3>
-        <div class="ed-row">
-          <select id="edK"><option>2</option><option>3</option><option selected>4</option>
-            <option>5</option><option>6</option><option>7</option><option>8</option></select>
-          <button class="tool-btn" onclick="Editor.requantize()">Apply K</button>
-        </div>
-        <h3>HOOK MATRIX RESIZE</h3>
-        <div class="ed-row">
-          <input id="edW" type="number" min="64" max="2688" placeholder="hooks">
-          <input id="edH" type="number" min="64" max="4400" placeholder="cards">
-          <button class="tool-btn" onclick="Editor.resizeMatrix()">Resize</button>
-        </div>
-        <h3>PRODUCTION FILES</h3>
-        <div class="downloads" style="margin-top:4px">
-          <button class="dl-btn primary" onclick="Editor.printCard()">📄 Design Card</button>
-          <button class="dl-btn" onclick="Editor.downloadBMP()">🧵 Production BMP</button>
-          <button class="dl-btn" onclick="Editor.downloadPNG()">🖼 Render PNG</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= HISTORY ================= -->
-<section class="screen" id="screen-history">
-  <div class="glass card">
-    <div class="card-head"><span class="step-no">✦</span><div>
-      <h2>My Designs</h2><p>Your generated and saved designs, stored in this browser.</p></div></div>
-    <div class="hist-grid" id="histGrid"></div>
-    <div class="empty hidden" id="histEmpty">No designs yet — open the Design Studio or edit a Gallery design.</div>
-  </div>
-</section>
-
-<!-- ================= ADMIN · DASHBOARD ================= -->
+<!-- ADMIN DASHBOARD -->
 <section class="screen" id="screen-admin">
   <div class="glass card">
-    <div class="section-heading">
-      <div><h2>Admin Dashboard <span class="admin-badge">ADMIN</span></h2>
-        <p style="color:var(--ink-dim);font-size:.85rem;margin-top:5px">Live overview of the whole NewCraft platform.</p></div>
-    </div>
+    <div class="section-heading"><div><h2>Admin Dashboard <span class="admin-badge">ADMIN</span></h2><p style="color:var(--ink-dim);font-size:.85rem;margin-top:5px">Manage your design catalog and customer access.</p></div></div>
     <div class="kpi-row" id="kpiRow"></div>
-    <div class="admin-2col">
-      <div class="glass panel"><h3>📊 Designs by Section</h3><div id="sectionChart"></div></div>
-      <div class="glass panel"><h3>🕑 Recent Designs</h3><div class="mini-list" id="recentDesigns"></div></div>
-    </div>
-    <div class="glass panel"><h3>👥 Recent Customers</h3>
-      <div class="table-wrap"><table class="dtable" id="recentUsers"></table></div>
-    </div>
+    <div class="cta-row" style="justify-content:flex-start"><a class="btn btn-gold" onclick="go('adminUpload')">⬆ Upload New Design</a><a class="btn btn-ghost" onclick="go('adminDesigns')">Manage Designs</a><a class="btn btn-ghost" onclick="go('adminCustomers')">Customers</a></div>
   </div>
 </section>
 
-<!-- ================= ADMIN · USERS ================= -->
-<section class="screen" id="screen-adminUsers">
+<!-- ADMIN UPLOAD -->
+<section class="screen" id="screen-adminUpload">
   <div class="glass card">
-    <div class="section-heading"><h2>Customer Accounts <span class="admin-badge">ADMIN</span></h2></div>
-    <div class="table-wrap"><table class="dtable" id="usersTable"></table></div>
+    <div class="section-heading"><h2>Upload New Design <span class="admin-badge">ADMIN</span></h2></div>
+    <div class="form-grid">
+      <label>Design Name<input id="uName" type="text" placeholder="Royal Maroon Palav"></label>
+      <label>Section<select id="uCat"><option>Saree Palav</option><option>Saree Border</option><option>Blouse</option><option>Lehenga</option><option>Piece Cloth</option><option>Butti</option></select></label>
+    </div>
+    <div class="full"><label>Description<textarea id="uDesc" rows="2" placeholder="Short description for buyers…"></textarea></label></div>
+    <div class="full"><label>Preview Image (thumbnail)
+      <div class="dropzone" id="uThumbZone"><div class="dz-ic">🖼️</div><p id="uThumbLabel">Click to choose a preview image (PNG/JPG)</p><input id="uThumb" type="file" accept="image/*" hidden></div></label></div>
+    <div class="full"><label>Production Files <span style="opacity:.6">(PNG, JPG, PDF, BMP, RAR, ZIP — select many)</span>
+      <div class="dropzone" id="uFilesZone"><div class="dz-ic">📦</div><p>Click to add production files (any type, multiple)</p><input id="uFiles" type="file" multiple hidden></div></label>
+      <div class="file-chips" id="uFileChips"></div></div>
+    <button class="btn btn-gold btn-wide" onclick="Admin.upload()">⬆ Publish Design to Catalog</button>
+    <div class="form-error" id="uError"></div>
   </div>
 </section>
 
-<!-- ================= ADMIN · ALL DESIGNS ================= -->
+<!-- ADMIN MANAGE DESIGNS -->
 <section class="screen" id="screen-adminDesigns">
   <div class="glass card">
-    <div class="section-heading">
-      <h2>All Designs <span class="admin-badge">ADMIN</span></h2>
-      <div class="filter-chips" id="adminDesignFilters" style="margin:0"></div>
-    </div>
-    <div class="gal-grid" id="adminDesignGrid"></div>
-    <div class="empty hidden" id="adminDesignEmpty">No designs on the platform yet.</div>
+    <div class="section-heading"><h2>Manage Designs <span class="admin-badge">ADMIN</span></h2><a class="btn btn-gold" style="padding:9px 18px;font-size:.82rem" onclick="go('adminUpload')">⬆ Upload</a></div>
+    <div class="table-wrap"><table class="dtable" id="adDesigns"></table></div>
+    <div class="empty hidden" id="adDesignsEmpty">No designs yet — upload your first one.</div>
   </div>
 </section>
 
-<!-- ================= ADMIN · MACHINES ================= -->
-<section class="screen" id="screen-adminMachines">
+<!-- ADMIN CUSTOMERS -->
+<section class="screen" id="screen-adminCustomers">
   <div class="glass card">
-    <div class="section-heading"><h2>Jacquard Machines <span class="admin-badge">ADMIN</span></h2></div>
-    <div class="mach-grid" id="machGrid"></div>
-    <h3 style="font-size:.95rem;margin:22px 0 12px;color:var(--gold-soft)">➕ Add Machine Profile</h3>
-    <div class="form-grid">
-      <label>Machine Name<input id="mName" type="text" placeholder="Staubli LX 5376"></label>
-      <label>Total Hooks<input id="mHooks" type="number" value="5376"></label>
-      <label>Reed<input id="mReed" type="number" value="108"></label>
-      <label>Loom Pick<input id="mPick" type="number" value="48"></label>
-    </div>
-    <button class="btn btn-gold btn-wide" onclick="Admin.addMachine()">➕ Add Machine</button>
+    <div class="section-heading"><h2>Customers &amp; Download Access <span class="admin-badge">ADMIN</span></h2></div>
+    <div class="table-wrap"><table class="dtable" id="adCustomers"></table></div>
   </div>
 </section>
 </main>
 
-<footer>NewCraft AI · pixel-perfect hook matrices for electronic jacquard · demo build</footer>
-
-<!-- ================= AI CHAT ================= -->
-<button class="chat-fab" id="chatFab" title="AI Assistant">💬</button>
-<div class="glass chat-panel hidden" id="chatPanel">
-  <div class="chat-head">
-    <span class="dot-on"></span>
-    <div><h3>NewCraft AI Assistant</h3><small>English · हिंदी · ગુજરાતી</small></div>
-    <button onclick="Chat.close()">✕</button>
-  </div>
-  <div class="chat-msgs" id="chatMsgs"></div>
-  <div class="chat-chips" id="chatChips"></div>
-  <div class="chat-input">
-    <input id="chatText" type="text" placeholder="Type in English / हिंदी / ગુજરાતી…">
-    <button id="chatSend">➤</button>
-  </div>
-</div>
-
-<!-- ================= PRINTABLE DESIGN CARD ================= -->
-<div id="printCard">
-  <div class="pc-head"><h1>NEWCRAFT AI — JACQUARD DESIGN CARD</h1><small id="pcRef"></small></div>
-  <div class="pc-specs" id="pcSpecs"></div>
-  <table><thead><tr><th>IDX</th><th>COLOR</th><th>YARN</th><th>AVG %</th></tr></thead>
-    <tbody id="pcYarn"></tbody></table>
-  <div style="text-align:center"><img id="pcImg" alt=""></div>
-</div>
-
+<footer>NewCraft AI · Jacquard Design Catalog · demo build</footer>
 <script>
-/* ============================================================
-   NewCraft AI — single-file demo. Everything runs in your
-   browser: blending, K-Means yarn quantization, hook matrix,
-   8-bit BMP compiler, deep editor, trilingual AI assistant.
-   ============================================================ */
 const $ = id => document.getElementById(id);
-const ROLES = ["Structure","Motif","Texture","Colour","Mood"];
-const YARNS = ["Ground Fabric","Jari S (Gold)","Jari Z (Dark Gold)","MX Blend",
-               "Extra Weft 1","Extra Weft 2","Cut Work 1","Cut Work 2"];
+const CATEGORIES = ['All','Saree Palav','Saree Border','Blouse','Lehenga','Piece Cloth','Butti'];
 
-/* =============== animated AI logo =============== */
-function logoSVG(s, uid) {
-  return `<svg class="nc-logo" width="${s}" height="${s}" viewBox="0 0 64 64" aria-label="NewCraft AI">
-  <defs>
-    <linearGradient id="lgA${uid}" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f3d98b"/><stop offset=".55" stop-color="#d4a017"/>
-      <stop offset="1" stop-color="#a87b0a"/>
-    </linearGradient>
-    <linearGradient id="lgB${uid}" x1="0" y1="1" x2="1" y2="0">
-      <stop offset="0" stop-color="#7fc8c8"/><stop offset="1" stop-color="#b58edb"/>
-    </linearGradient>
-    <filter id="glow${uid}" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="1.1" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-  </defs>
-  <rect x="2" y="2" width="60" height="60" rx="16" fill="#141225"/>
-  <rect x="2" y="2" width="60" height="60" rx="16" fill="none" stroke="url(#lgA${uid})" stroke-width="2"/>
-  <g stroke="url(#lgA${uid})" stroke-width="1.5" stroke-linecap="round" opacity=".45">
-    <path class="lg-t" d="M12 22 H52"/><path class="lg-t" d="M12 32 H52"/><path class="lg-t" d="M12 42 H52"/>
-    <path class="lg-t" d="M22 12 V52"/><path class="lg-t" d="M32 12 V52"/><path class="lg-t" d="M42 12 V52"/>
-  </g>
-  <path class="lg-n" d="M22 42 V22 L42 42 V22" fill="none" stroke="url(#lgA${uid})" stroke-width="4"
-    stroke-linecap="round" stroke-linejoin="round" filter="url(#glow${uid})"/>
-  <g fill="url(#lgB${uid})">
-    <circle class="lg-node"    cx="22" cy="22" r="3"/>
-    <circle class="lg-node d2" cx="42" cy="22" r="3"/>
-    <circle class="lg-node d3" cx="22" cy="42" r="3"/>
-    <circle class="lg-node d1" cx="42" cy="42" r="3"/>
-    <circle class="lg-node d2" cx="32" cy="32" r="2.2"/>
-  </g>
-  <path class="lg-spark" fill="url(#lgB${uid})"
-    d="M50 11.5 l1.3 3 3 1.3 -3 1.3 -1.3 3 -1.3 -3 -3 -1.3 3 -1.3 z"/>
-</svg>`;
-}
+/* ===== animated logo ===== */
+function logoSVG(s,u){return `<svg class="nc-logo" width="${s}" height="${s}" viewBox="0 0 64 64" aria-label="NewCraft AI"><defs><linearGradient id="a${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3d98b"/><stop offset=".55" stop-color="#d4a017"/><stop offset="1" stop-color="#a87b0a"/></linearGradient><linearGradient id="b${u}" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#7fc8c8"/><stop offset="1" stop-color="#b58edb"/></linearGradient></defs><rect x="2" y="2" width="60" height="60" rx="16" fill="#141225"/><rect x="2" y="2" width="60" height="60" rx="16" fill="none" stroke="url(#a${u})" stroke-width="2"/><g stroke="url(#a${u})" stroke-width="1.5" stroke-linecap="round" opacity=".45"><path class="lg-t" d="M12 22 H52"/><path class="lg-t" d="M12 32 H52"/><path class="lg-t" d="M12 42 H52"/><path class="lg-t" d="M22 12 V52"/><path class="lg-t" d="M32 12 V52"/><path class="lg-t" d="M42 12 V52"/></g><path class="lg-n" d="M22 42 V22 L42 42 V22" fill="none" stroke="url(#a${u})" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><g fill="url(#b${u})"><circle class="lg-node" cx="22" cy="22" r="3"/><circle class="lg-node d2" cx="42" cy="22" r="3"/><circle class="lg-node d3" cx="22" cy="42" r="3"/><circle class="lg-node d1" cx="42" cy="42" r="3"/><circle class="lg-node d2" cx="32" cy="32" r="2.2"/></g><path class="lg-spark" fill="url(#b${u})" d="M50 11.5 l1.3 3 3 1.3 -3 1.3 -1.3 3 -1.3 -3 -3 -1.3 3 -1.3 z"/></svg>`;}
 
-/* =============== shared utils =============== */
-function hexToRgb(hex) {
-  const h = hex.replace('#','');
-  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
-}
-const rgbToHex = rgb => '#' + rgb.map(v => Math.round(v).toString(16).padStart(2,'0')).join('');
-
-function quantize(imageData, k) {
-  const px = imageData.data, n = px.length / 4;
-  const S = Math.min(n, 24000), step = Math.max(1, Math.floor(n / S));
-  const sample = [];
-  for (let i = 0; i < n; i += step) sample.push([px[i*4], px[i*4+1], px[i*4+2]]);
-  let centers = [];
-  for (let i = 0; i < k; i++) centers.push([...sample[Math.floor(i * sample.length / k)]]);
-  for (let iter = 0; iter < 14; iter++) {
-    const sum = centers.map(() => [0,0,0,0]);
-    for (const p of sample) {
-      let bi = 0, bd = 1e12;
-      for (let c = 0; c < k; c++) {
-        const d = (p[0]-centers[c][0])**2 + (p[1]-centers[c][1])**2 + (p[2]-centers[c][2])**2;
-        if (d < bd) { bd = d; bi = c; }
-      }
-      sum[bi][0]+=p[0]; sum[bi][1]+=p[1]; sum[bi][2]+=p[2]; sum[bi][3]++;
-    }
-    centers = sum.map((s, c) => s[3] ? [s[0]/s[3], s[1]/s[3], s[2]/s[3]] : centers[c]);
-  }
-  const indices = new Uint8Array(n), counts = new Array(k).fill(0);
-  for (let i = 0; i < n; i++) {
-    let bi = 0, bd = 1e12;
-    for (let c = 0; c < k; c++) {
-      const d = (px[i*4]-centers[c][0])**2 + (px[i*4+1]-centers[c][1])**2 + (px[i*4+2]-centers[c][2])**2;
-      if (d < bd) { bd = d; bi = c; }
-    }
-    indices[i] = bi; counts[bi]++;
-  }
-  const order = counts.map((c, i) => [c, i]).sort((a, b) => b[0] - a[0]).map(x => x[1]);
-  const remap = new Uint8Array(k);
-  order.forEach((old, ni) => remap[old] = ni);
-  for (let i = 0; i < n; i++) indices[i] = remap[indices[i]];
-  return {
-    indices,
-    palette: order.map(o => centers[o].map(Math.round)),
-    pct: order.map(o => +(counts[o] * 100 / n).toFixed(2)),
-  };
-}
-
-function paintModel(model, canvas, tile2x2) {
-  const { indices, palette, w, h } = model;
-  const off = document.createElement('canvas'); off.width = w; off.height = h;
-  const og = off.getContext('2d');
-  const od = og.createImageData(w, h);
-  for (let i = 0; i < indices.length; i++) {
-    const p = palette[indices[i]] || [0,0,0];
-    od.data[i*4] = p[0]; od.data[i*4+1] = p[1]; od.data[i*4+2] = p[2]; od.data[i*4+3] = 255;
-  }
-  og.putImageData(od, 0, 0);
-  if (tile2x2) {
-    canvas.width = w * 2; canvas.height = h * 2;
-    const g = canvas.getContext('2d');
-    for (const [x, y] of [[0,0],[w,0],[0,h],[w,h]]) g.drawImage(off, x, y);
-  } else {
-    canvas.width = w; canvas.height = h;
-    canvas.getContext('2d').drawImage(off, 0, 0);
-  }
-  return off;
-}
-
-function saveBlob(blob, name) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = name; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-}
-
-function modelBMP(model) {   // hand-built valid 8-bit indexed BMP
-  const { indices, w, h, palette } = model;
-  const rowSize = Math.ceil(w / 4) * 4, imgSize = rowSize * h, off = 14 + 40 + 1024;
-  const buf = new ArrayBuffer(off + imgSize), dv = new DataView(buf), by = new Uint8Array(buf);
-  dv.setUint8(0, 0x42); dv.setUint8(1, 0x4D);
-  dv.setUint32(2, off + imgSize, true); dv.setUint32(10, off, true);
-  dv.setUint32(14, 40, true); dv.setInt32(18, w, true); dv.setInt32(22, h, true);
-  dv.setUint16(26, 1, true); dv.setUint16(28, 8, true);
-  dv.setUint32(34, imgSize, true);
-  dv.setInt32(38, 2835, true); dv.setInt32(42, 2835, true);
-  dv.setUint32(46, 256, true);
-  palette.forEach((rgb, i) => {
-    const o = 54 + i * 4;
-    dv.setUint8(o, rgb[2]); dv.setUint8(o + 1, rgb[1]); dv.setUint8(o + 2, rgb[0]);
-  });
-  for (let y = 0; y < h; y++) {
-    const src = (h - 1 - y) * w, dst = off + y * rowSize;
-    for (let x = 0; x < w; x++) by[dst + x] = indices[src + x];
-  }
-  return new Blob([buf], { type: 'image/bmp' });
-}
-
-function fillPrintCard(model, canvas) {
-  const m = model.metrics;
-  $('pcRef').textContent = `Party: ${model.party} · Design: ${model.title} · ${new Date().toLocaleDateString()}`;
-  $('pcSpecs').innerHTML = [
-    ['TOTAL HOOKS', model.w.toLocaleString()], ['TOTAL CARDS', model.h.toLocaleString()],
-    ['LOOM PICK', m.pick], ['REED', m.reed],
-    ['WIDTH', (model.w / m.reed).toFixed(2) + '"'], ['TOTAL INCHES', (model.h / m.pick).toFixed(2) + '"'],
-    ['COLORS (K)', model.palette.length], ['SECTION', model.category],
-  ].map(([k, v]) => `<div class="pc-spec"><span>${k}</span><b>${v}</b></div>`).join('');
-  $('pcYarn').innerHTML = model.palette.map((rgb, i) => `
-    <tr><td>${i}</td><td><span class="pc-sw" style="background:rgb(${rgb})"></span></td>
-    <td>${YARNS[i]}</td><td>${model.pct[i].toFixed(2)}%</td></tr>`).join('');
-  $('pcImg').src = canvas.toDataURL('image/png');
-  setTimeout(() => window.print(), 60);
-}
-
-/* =============== history store (owner-tagged) =============== */
-const Hist = {
-  all: () => JSON.parse(localStorage.getItem('nc_history') || '[]'),
-  session: () => JSON.parse(localStorage.getItem('nc_session') || 'null'),
-  mine() {
-    const email = Hist.session()?.email;
-    return Hist.all().filter(i => i.owner === email);
-  },
-  add(model, canvas, meta) {
-    const s = Hist.session();
-    const tc = document.createElement('canvas');
-    tc.width = 320; tc.height = Math.round(320 * canvas.height / canvas.width);
-    tc.getContext('2d').drawImage(canvas, 0, 0, tc.width, tc.height);
-    const items = Hist.all();
-    items.unshift({ id: (meta?.id) || Date.now() + Math.floor(Math.random()*1000),
-      title: model.title, party: model.party,
-      category: model.category, date: (meta?.date) || new Date().toLocaleDateString(),
-      hooks: model.w, cards: model.h, k: model.palette.length,
-      owner: (meta?.owner) || s?.email || 'guest',
-      ownerName: (meta?.ownerName) || s?.name || 'Guest',
-      thumb: tc.toDataURL('image/jpeg', 0.72) });
-    localStorage.setItem('nc_history', JSON.stringify(items.slice(0, 80)));
-  },
-  del(id) {
-    localStorage.setItem('nc_history', JSON.stringify(Hist.all().filter(i => i.id !== id)));
-    App.renderHistory();
-  },
+/* ===== IndexedDB (file blobs) ===== */
+const IDB = {
+  db:null,
+  open(){ return new Promise((res,rej)=>{ const r=indexedDB.open('nc_catalog',1);
+    r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains('files')) r.result.createObjectStore('files'); };
+    r.onsuccess=()=>{IDB.db=r.result;res()}; r.onerror=()=>rej(r.error); }); },
+  put(id,blob){ return new Promise((res,rej)=>{ const t=IDB.db.transaction('files','readwrite'); t.objectStore('files').put(blob,id); t.oncomplete=res; t.onerror=()=>rej(t.error); }); },
+  get(id){ return new Promise((res,rej)=>{ const t=IDB.db.transaction('files','readonly'); const q=t.objectStore('files').get(id); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); }); },
+  del(id){ return new Promise((res)=>{ const t=IDB.db.transaction('files','readwrite'); t.objectStore('files').delete(id); t.oncomplete=res; }); },
 };
 
-/* =============== router =============== */
-const CUSTOMER_SCREENS = ['studio','history','editor'];
-const ADMIN_SCREENS = ['admin','adminUsers','adminDesigns','adminMachines'];
-function go(screen) {
-  const s = App.user();
-  if (ADMIN_SCREENS.includes(screen) && s?.role !== 'admin') screen = 'auth';
-  if (CUSTOMER_SCREENS.includes(screen) && (!s || s.role === 'admin')) screen = 'auth';
-  document.getElementById('mainNav').classList.remove('open');
-  document.querySelectorAll('.screen').forEach(sc => sc.classList.remove('on'));
-  $('screen-' + screen).classList.add('on');
-  document.querySelectorAll('nav a').forEach(a =>
-    a.classList.toggle('active', a.dataset.nav === screen));
-  if (screen === 'history') App.renderHistory();
-  if (screen === 'gallery') Gallery.render();
-  if (screen === 'admin') Admin.dashboard();
-  if (screen === 'adminUsers') Admin.users();
-  if (screen === 'adminDesigns') Admin.designs();
-  if (screen === 'adminMachines') Admin.machines();
-  window.scrollTo({ top: 0 });
-  window.__reveal?.();
+/* ===== stores ===== */
+const Designs = { all:()=>JSON.parse(localStorage.getItem('nc_designs')||'[]'), save:l=>localStorage.setItem('nc_designs',JSON.stringify(l)) };
+const Users = { all:()=>JSON.parse(localStorage.getItem('nc_users')||'[]'), save:l=>localStorage.setItem('nc_users',JSON.stringify(l)) };
+const fmtSize = b => b<1024?b+' B':b<1048576?(b/1024).toFixed(0)+' KB':(b/1048576).toFixed(1)+' MB';
+const fileIcon = n => { const e=(n.split('.').pop()||'').toLowerCase();
+  return e==='pdf'?'📄':['png','jpg','jpeg','webp','bmp','gif'].includes(e)?'🖼️':['rar','zip','7z'].includes(e)?'🗜️':'📎'; };
+const rid = () => 'f'+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36);
+
+/* ===== seed demo data (once) ===== */
+function drawThumb(kind,W,H,P){ const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d');
+  g.fillStyle=P[0]; g.fillRect(0,0,W,H);
+  const flor=(x,y,s)=>{ for(let a=0;a<360;a+=60){g.fillStyle=P[1];g.beginPath();g.ellipse(x+s*Math.cos(a*Math.PI/180),y+s*Math.sin(a*Math.PI/180),s*.6,s*.6,0,0,7);g.fill();}g.fillStyle=P[2];g.beginPath();g.arc(x,y,s*.5,0,7);g.fill(); };
+  if(kind==='border'){ for(let x=0;x<W;x+=W/6)flor(x+W/12,H*.3,W*.05); g.fillStyle=P[2];g.fillRect(0,H*.6,W,H*.4); g.fillStyle=P[1];for(let x=0;x<W;x+=W/7){g.beginPath();g.moveTo(x+W/14,H*.72);g.lineTo(x,H*.82);g.lineTo(x+W/7,H*.82);g.fill();} }
+  else if(kind==='palav'){ g.strokeStyle=P[2];g.lineWidth=W*.01;for(let i=-4;i<10;i++){g.beginPath();g.moveTo(i*W/5,0);g.lineTo(i*W/5+H,H);g.stroke();g.beginPath();g.moveTo(i*W/5,0);g.lineTo(i*W/5-H,H);g.stroke();} for(let r=0;r<H/(W/5);r++)for(let cX=0;cX<6;cX++)flor(cX*W/5+(r%2?W/10:0),r*W/5+W/10,W*.05); }
+  else if(kind==='lehenga'){ const pw=W/4; for(let p=0;p<4;p++){g.fillStyle=p%2?P[2]:P[0];g.fillRect(p*pw,0,pw,H);for(let r=0;r<H/(pw*.7);r++){g.fillStyle=P[1];g.save();g.translate(p*pw+pw/2,r*pw*.7+pw*.35);g.rotate(Math.PI/4);g.fillRect(-pw*.12,-pw*.12,pw*.24,pw*.24);g.restore();}} }
+  else if(kind==='blouse'){ const s=W/6;for(let r=-1;r<H/s+1;r++)for(let cX=-1;cX<W/s+1;cX++){const x=cX*s+(r%2?s/2:0),y=r*s;g.fillStyle=P[1];[[0,-1],[0,1],[-1,0],[1,0]].forEach(([dx,dy])=>{g.beginPath();g.arc(x+dx*s*.13,y+dy*s*.13,s*.08,0,7);g.fill();});g.fillStyle=P[2];g.beginPath();g.arc(x,y,s*.06,0,7);g.fill();} }
+  else if(kind==='piece'){ g.strokeStyle=P[2];g.lineWidth=W*.008;for(let r=0;r<5;r++){const y0=r*H/5+H/10;g.beginPath();for(let x=0;x<=W;x+=5)g.lineTo(x,y0+Math.sin(x/W*Math.PI*4+(r%2?Math.PI:0))*H*.04);g.stroke();for(let x=W/12;x<W;x+=W/6)flor(x,y0+Math.sin(x/W*Math.PI*4)*H*.04,W*.03);} }
+  else { const s=W/5;for(let r=-1;r<H/s+1;r++)for(let cX=-1;cX<W/s+1;cX++)flor(cX*s+(r%2?s/2:0),r*s+s/2,s*.16); }
+  return c;
+}
+const MINI_PDF = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 300 160]/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>endobj\n4 0 obj<</Length 70>>stream\nBT /F1 16 Tf 24 90 Td (NewCraft AI - Jacquard Design Card) Tj ET\nendstream endobj\n5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF";
+
+async function seed(){
+  if(localStorage.getItem('nc_catalog_seeded_v1')) return;
+  // users
+  const users=[
+    {name:'Rajesh Textiles',email:'rajesh@surat.com',pass:'demo123',role:'customer',canDownload:true,joined:'2026-06-10',active:true},
+    {name:'Anil Sarees',email:'anil@sarees.in',pass:'demo123',role:'customer',canDownload:false,joined:'2026-06-22',active:true},
+  ];
+  const ex=Users.all(); users.forEach(u=>{if(!ex.some(x=>x.email===u.email))ex.push(u)}); Users.save(ex);
+  // designs
+  const P={maroon:['#7a1230','#d4a017','#8a6a1f'],blue:['#16294f','#c9cede','#8e97ad'],green:['#0e4d3a','#d64a7d','#d4a017'],purple:['#3d1a4f','#d4a017','#b58edb'],teal:['#0f4a52','#d4a017','#7fc8c8']};
+  const plan=[
+    ['Royal Maroon Palav','Saree Palav','palav',P.maroon,['png','jpg','pdf','rar']],
+    ['Gold Zari Border','Saree Border','border',P.maroon,['png','pdf','zip']],
+    ['Peacock Blue Palav','Saree Palav','palav',P.blue,['png','jpg','pdf']],
+    ['Blouse Buta Set','Blouse','blouse',P.green,['png','pdf','rar']],
+    ['Bridal Lehenga Kali','Lehenga','lehenga',P.purple,['png','jpg','pdf','zip']],
+    ['Vine Jaal Piece Cloth','Piece Cloth','piece',P.teal,['png','pdf']],
+  ];
+  const designs=[];
+  for(let i=0;i<plan.length;i++){
+    const [name,cat,kind,pal,exts]=plan[i];
+    const big=drawThumb(kind,700,875,pal);
+    const thumb=drawThumb(kind,300,375,pal).toDataURL('image/jpeg',0.7);
+    const files=[];
+    for(const ext of exts){
+      const id=rid(); let blob;
+      const base=name.replace(/\s+/g,'_');
+      if(ext==='png') blob=await new Promise(r=>big.toBlob(r,'image/png'));
+      else if(ext==='jpg') blob=await new Promise(r=>big.toBlob(r,'image/jpeg',0.9));
+      else if(ext==='pdf') blob=new Blob([MINI_PDF],{type:'application/pdf'});
+      else if(ext==='zip') blob=new Blob([await (await new Promise(r=>big.toBlob(r,'image/png'))).arrayBuffer()],{type:'application/zip'});
+      else blob=new Blob([await (await new Promise(r=>big.toBlob(r,'image/png'))).arrayBuffer()],{type:'application/vnd.rar'});
+      await IDB.put(id,blob);
+      files.push({id,name:base+'.'+ext,type:blob.type,size:blob.size});
+    }
+    designs.push({id:'d'+i,name,category:cat,description:'Production-grade '+cat.toLowerCase()+' design with full file package.',thumb,files,date:'2026-06-'+(12+i),published:true});
+  }
+  Designs.save(designs);
+  localStorage.setItem('nc_catalog_seeded_v1','1');
 }
 
-/* =============== sample design generators =============== */
-function floret(g, x, y, s, petal, center) {
-  for (let a = 0; a < 360; a += 60) {
-    g.fillStyle = petal; g.beginPath();
-    g.ellipse(x + s*Math.cos(a*Math.PI/180), y + s*Math.sin(a*Math.PI/180), s*.62, s*.62, 0, 0, 7);
-    g.fill();
-  }
-  g.fillStyle = center; g.beginPath(); g.arc(x, y, s*.55, 0, 7); g.fill();
-}
-function paisley(g, x, y, s, fill) {
-  g.save(); g.translate(x, y); g.beginPath();
-  g.moveTo(0, -s);
-  g.bezierCurveTo(s*.95, -s*.85, s*.85, s*.65, 0, s);
-  g.bezierCurveTo(-s*.55, s*.5, -s*.45, -s*.35, 0, -s);
-  g.closePath(); g.fillStyle = fill; g.fill(); g.restore();
-}
-function drawButti(g, W, H, P) {
-  g.fillStyle = P[0]; g.fillRect(0, 0, W, H);
-  const s = W / 7;
-  for (let r = -1; r < H/s + 1; r++)
-    for (let c = -1; c < W/s + 1; c++) {
-      const x = c*s + (r % 2 ? s/2 : 0), y = r*s + s/2;
-      floret(g, x, y, s*.16, P[1], P[2]);
-      g.fillStyle = P[3]; g.beginPath(); g.arc(x + s/2, y, s*.045, 0, 7); g.fill();
-    }
-}
-function drawBorder(g, W, H, P) {
-  g.fillStyle = P[0]; g.fillRect(0, 0, W, H);
-  const s = W / 9;   // sparse buttis on top ground
-  for (let r = 0; r < (H*.55)/s; r++)
-    for (let c = 0; c < W/s + 1; c++)
-      floret(g, c*s + (r%2 ? s/2 : 0), r*s + s*.6, s*.09, P[1], P[3]);
-  const bandY = H * .60;
-  g.fillStyle = P[2]; g.fillRect(0, bandY, W, H - bandY);
-  g.fillStyle = P[1]; g.fillRect(0, bandY, W, H*.02); g.fillRect(0, H*.96, W, H*.02);
-  const ps = W / 8;
-  for (let c = 0; c < 9; c++) {
-    paisley(g, c*ps + ps/2, bandY + (H-bandY)*.42, ps*.30, P[1]);
-    g.fillStyle = P[3]; g.beginPath();
-    g.arc(c*ps + ps/2, bandY + (H-bandY)*.78, ps*.06, 0, 7); g.fill();
-  }
-}
-function drawPalav(g, W, H, P) {
-  g.fillStyle = P[0]; g.fillRect(0, 0, W, H);
-  const s = W / 6;   // diamond jaal
-  g.strokeStyle = P[2]; g.lineWidth = W*.008;
-  for (let i = -6; i < 12; i++) {
-    g.beginPath(); g.moveTo(i*s, 0); g.lineTo(i*s + H, H); g.stroke();
-    g.beginPath(); g.moveTo(i*s, 0); g.lineTo(i*s - H, H); g.stroke();
-  }
-  for (let r = 0; r < H/s + 1; r++)
-    for (let c = -1; c < W/s + 1; c++)
-      floret(g, c*s + (r%2 ? s/2 : 0), r*s*.9 + s*.45, s*.14, P[1], P[3]);
-  g.fillStyle = P[1]; g.fillRect(0, 0, W, H*.05); g.fillRect(0, H*.95, W, H*.05);
-  g.fillStyle = P[3]; g.fillRect(0, H*.06, W, H*.012); g.fillRect(0, H*.928, W, H*.012);
-}
-function drawBlouse(g, W, H, P) {
-  g.fillStyle = P[0]; g.fillRect(0, 0, W, H);
-  const s = W / 11;
-  for (let r = -1; r < H/s + 1; r++)
-    for (let c = -1; c < W/s + 1; c++) {
-      const x = c*s + (r%2 ? s/2 : 0), y = r*s;
-      g.fillStyle = P[1];
-      [[0,-1],[0,1],[-1,0],[1,0]].forEach(([dx,dy]) => {
-        g.beginPath(); g.arc(x + dx*s*.13, y + dy*s*.13, s*.075, 0, 7); g.fill();
-      });
-      g.fillStyle = P[3]; g.beginPath(); g.arc(x, y, s*.06, 0, 7); g.fill();
-    }
-  const bandY = H * .82;   // scallop band
-  g.fillStyle = P[2]; g.fillRect(0, bandY, W, H - bandY);
-  g.fillStyle = P[0];
-  for (let c = 0; c < 12; c++) {
-    g.beginPath(); g.arc(c*W/10 + W/20, bandY, W*.05, 0, Math.PI, false); g.fill();
-  }
-  g.fillStyle = P[1];
-  for (let c = 0; c < 11; c++) {
-    g.beginPath(); g.arc(c*W/10 + W/20, bandY + (H-bandY)*.55, W*.012, 0, 7); g.fill();
-  }
-}
-function drawLehenga(g, W, H, P) {
-  const pw = W / 5;
-  for (let p = 0; p < 5; p++) {
-    g.fillStyle = p % 2 ? P[2] : P[0];
-    g.fillRect(p*pw, 0, pw, H);
-    const cx = p*pw + pw/2, s = pw*.5;
-    for (let r = 0; r < H/s + 1; r++) {
-      const y = r*s + s/2;
-      g.fillStyle = P[1]; g.save(); g.translate(cx, y); g.rotate(Math.PI/4);
-      g.fillRect(-s*.17, -s*.17, s*.34, s*.34); g.restore();
-      g.fillStyle = P[3]; g.beginPath(); g.arc(cx, y, s*.07, 0, 7); g.fill();
-    }
-    g.strokeStyle = P[1]; g.lineWidth = W*.006;
-    g.beginPath(); g.moveTo(p*pw, 0); g.lineTo(p*pw, H); g.stroke();
-  }
-}
-function drawPiece(g, W, H, P) {
-  g.fillStyle = P[0]; g.fillRect(0, 0, W, H);
-  const rows = 6, amp = H/rows*.32;
-  g.strokeStyle = P[2]; g.lineWidth = W*.007;
-  for (let r = 0; r < rows; r++) {
-    const y0 = r*H/rows + H/rows/2;
-    g.beginPath();
-    for (let x = 0; x <= W; x += 6)
-      g.lineTo(x, y0 + Math.sin(x/W * Math.PI*4 + (r%2?Math.PI:0)) * amp);
-    g.stroke();
-    for (let x = W/16; x < W; x += W/8) {
-      const y = y0 + Math.sin(x/W * Math.PI*4 + (r%2?Math.PI:0)) * amp;
-      floret(g, x, y, W*.022, P[1], P[3]);
-      g.fillStyle = P[1]; g.beginPath();
-      g.ellipse(x + W*.045, y - H*.01, W*.016, W*.008, .6, 0, 7); g.fill();
-    }
-  }
+/* ===== router ===== */
+const CUST=['catalog','detail'], ADM=['admin','adminUpload','adminDesigns','adminCustomers'];
+function go(screen){
+  const u=App.user();
+  if(ADM.includes(screen)&&u?.role!=='admin')screen='auth';
+  if(CUST.includes(screen)&&!u)screen='auth';
+  $('mainNav').classList.remove('open');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  $('screen-'+screen).classList.add('on');
+  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('active',a.dataset.nav===screen));
+  if(screen==='catalog'){App.refreshPerm();Catalog.render();}
+  if(screen==='admin')Admin.dashboard();
+  if(screen==='adminDesigns')Admin.designs();
+  if(screen==='adminCustomers')Admin.customers();
+  window.scrollTo({top:0});
 }
 
-const PALETTES = {
-  maroonGold: ['#7a1230','#d4a017','#8a6a1f','#f2e8d5'],
-  royalBlue:  ['#16294f','#c9cede','#8e97ad','#efe9dc'],
-  greenPink:  ['#0e4d3a','#d64a7d','#d4a017','#f2e8d5'],
-  purpleGold: ['#3d1a4f','#d4a017','#b58edb','#f2e8d5'],
-  redCream:   ['#8a1523','#f2e8d5','#d4a017','#2c2c34'],
-  tealGold:   ['#0f4a52','#d4a017','#7fc8c8','#f2e8d5'],
-};
-const SAMPLES = [
-  { id:'butti1',  title:'Classic Micro Butti',   cat:'Butti',        pal:PALETTES.maroonGold, draw:drawButti },
-  { id:'butti2',  title:'Royal Blue Butti',      cat:'Butti',        pal:PALETTES.royalBlue,  draw:drawButti },
-  { id:'border1', title:'Paisley Zari Border',   cat:'Saree Border', pal:PALETTES.maroonGold, draw:drawBorder },
-  { id:'border2', title:'Teal Paisley Border',   cat:'Saree Border', pal:PALETTES.tealGold,   draw:drawBorder },
-  { id:'palav1',  title:'Heritage Palav Jaal',   cat:'Saree Palav',  pal:PALETTES.greenPink,  draw:drawPalav },
-  { id:'palav2',  title:'Regal Purple Palav',    cat:'Saree Palav',  pal:PALETTES.purpleGold, draw:drawPalav },
-  { id:'blouse1', title:'Blouse Buta & Scallop', cat:'Blouse',       pal:PALETTES.redCream,   draw:drawBlouse },
-  { id:'blouse2', title:'Blouse Dot Jaal',       cat:'Blouse',       pal:PALETTES.maroonGold, draw:drawBlouse },
-  { id:'leh1',    title:'Lehenga Kali Panels',   cat:'Lehenga',      pal:PALETTES.purpleGold, draw:drawLehenga },
-  { id:'leh2',    title:'Bridal Kali Red',       cat:'Lehenga',      pal:PALETTES.redCream,   draw:drawLehenga },
-  { id:'piece1',  title:'Vine Jaal Piece Cloth', cat:'Piece Cloth',  pal:PALETTES.tealGold,   draw:drawPiece },
-  { id:'piece2',  title:'Mughal Vine Jaal',      cat:'Piece Cloth',  pal:PALETTES.greenPink,  draw:drawPiece },
-];
-const CATEGORIES = ['All','Butti','Saree Border','Saree Palav','Blouse','Lehenga','Piece Cloth'];
+/* ===== download helper ===== */
+async function downloadFile(f){
+  const blob=await IDB.get(f.id); if(!blob)return alert('File not found.');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=f.name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
 
-/* =============== gallery =============== */
-const Gallery = (() => {
-  let filter = 'All', built = false;
-  function render() {
-    $('galFilters').innerHTML = CATEGORIES.map(c =>
-      `<div class="fchip ${c === filter ? 'active' : ''}" onclick="Gallery.setFilter('${c}')">${c}</div>`).join('');
-    const grid = $('galGrid'); grid.innerHTML = '';
-    SAMPLES.filter(s => filter === 'All' || s.cat === filter).forEach(s => {
-      const card = document.createElement('div');
-      card.className = 'glass gal-card';
-      const cv = document.createElement('canvas'); cv.width = 240; cv.height = 300;
-      s.draw(cv.getContext('2d'), 240, 300, s.pal);
-      card.appendChild(cv);
-      const body = document.createElement('div'); body.className = 'gal-body';
-      body.innerHTML = `<h3>${s.title}</h3><span class="gal-cat">${s.cat}</span>
-        <a class="btn btn-gold" onclick="Gallery.edit('${s.id}')">🎛 Open &amp; Edit</a>`;
-      card.appendChild(body);
-      grid.appendChild(card);
-    });
-    built = true;
+/* ===== catalog (customer) ===== */
+const Catalog=(()=>{
+  let filter='All', currentId=null;
+  function render(){
+    const u=App.user();
+    $('catalogPerm').innerHTML = u&&u.canDownload
+      ? '✅ Your account is approved — you can download files.'
+      : '🔒 View only — ask the admin to approve your account for downloads.';
+    $('catFilters').innerHTML=CATEGORIES.map(c=>`<div class="fchip ${c===filter?'active':''}" onclick="Catalog.setFilter('${c}')">${c}</div>`).join('');
+    const list=Designs.all().filter(d=>d.published&&(filter==='All'||d.category===filter));
+    $('catEmpty').classList.toggle('hidden',list.length>0);
+    $('catGrid').innerHTML=list.map(d=>`<div class="glass cat-card" onclick="Catalog.open('${d.id}')">
+      <img class="thumb" src="${d.thumb}" alt=""><div class="cat-body"><h3>${d.name}</h3><span class="cat-cat">${d.category}</span>
+      <div class="cat-files">📦 ${d.files.length} file${d.files.length!==1?'s':''} · ${d.files.map(f=>f.name.split('.').pop().toUpperCase()).join(', ')}</div></div></div>`).join('');
   }
-  function setFilter(c) { filter = c; render(); }
-  function edit(id) {
-    if (!App.user()) { go('auth'); return; }
-    const s = SAMPLES.find(x => x.id === id);
-    const W = 896, H = 1120;
-    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-    s.draw(cv.getContext('2d'), W, H, s.pal);
-    const q = quantize(cv.getContext('2d').getImageData(0, 0, W, H), 4);
-    Editor.open({ ...q, w: W, h: H, title: s.title + ' (Copy)', party: App.user().name,
-      category: s.cat, metrics: { reed: 108, pick: 48 } });
+  function setFilter(c){filter=c;render();}
+  function open(id){
+    App.refreshPerm();
+    currentId=id; const d=Designs.all().find(x=>x.id===id); if(!d)return;
+    const u=App.user(); const can=u&&u.canDownload;
+    $('dThumb').src=d.thumb; $('dCat').textContent=d.category; $('dName').textContent=d.name; $('dDesc').textContent=d.description;
+    $('dPerm').innerHTML = can
+      ? '<div class="perm-note perm-yes">✅ You are approved — download any file below.</div>'
+      : '<div class="perm-note perm-no">🔒 Downloads locked. Ask the admin to approve your account, then refresh.</div>';
+    $('dFiles').innerHTML=d.files.map((f,i)=>`<div class="file-row"><span class="file-ic">${fileIcon(f.name)}</span>
+      <div class="file-meta"><b>${f.name}</b><span>${(f.name.split('.').pop()||'').toUpperCase()} · ${fmtSize(f.size)}</span></div>
+      <button class="dl-btn" ${can?'':'disabled'} onclick="Catalog.dl('${id}',${i})">${can?'⬇ Download':'🔒 Locked'}</button></div>`).join('')
+      + (can?`<button class="btn btn-ghost dl-all" onclick="Catalog.dlAll('${id}')" style="padding:10px 20px;font-size:.82rem;margin-top:6px">⬇ Download all files</button>`:'');
+    go('detail');
   }
-  return { render, setFilter, edit };
+  async function dl(id,i){ const d=Designs.all().find(x=>x.id===id); await downloadFile(d.files[i]); }
+  async function dlAll(id){ const d=Designs.all().find(x=>x.id===id); for(const f of d.files){ await downloadFile(f); await new Promise(r=>setTimeout(r,400)); } }
+  return { render, setFilter, open, dl, dlAll };
 })();
 
-/* =============== deep editor =============== */
-const Editor = (() => {
-  let D = null;
-  const undoStack = [];
-  const isOpen = () => D !== null;
+/* ===== admin ===== */
+const Admin=(()=>{
+  const customers=()=>Users.all().filter(u=>u.role!=='admin');
+  let pendingThumb=null, pendingFiles=[];
 
-  function snapshot() {
-    undoStack.push({ indices: new Uint8Array(D.indices),
-      palette: D.palette.map(c => [...c]), pct: [...D.pct], w: D.w, h: D.h });
-    if (undoStack.length > 15) undoStack.shift();
+  function dashboard(){
+    const d=Designs.all(), cu=customers();
+    const totalFiles=d.reduce((s,x)=>s+x.files.length,0);
+    const approved=cu.filter(u=>u.canDownload).length;
+    $('kpiRow').innerHTML=[['🎨',d.length,'DESIGNS'],['📦',totalFiles,'TOTAL FILES'],['👥',cu.length,'CUSTOMERS'],['✅',approved,'DOWNLOAD-APPROVED']]
+      .map(([ic,n,t])=>`<div class="glass kpi"><div class="kpi-ic">${ic}</div><div class="kpi-n">${n}</div><div class="kpi-t">${t}</div></div>`).join('');
   }
-  function undo() {
-    const s = undoStack.pop();
-    if (s) { Object.assign(D, s); render(); }
+  function initUpload(){
+    pendingThumb=null; pendingFiles=[];
+    $('uThumbZone').onclick=()=>$('uThumb').click();
+    $('uFilesZone').onclick=()=>$('uFiles').click();
+    $('uThumb').onchange=e=>{ const f=e.target.files[0]; if(!f)return;
+      const img=new Image(); img.onload=()=>{ const c=document.createElement('canvas'); const w=400,h=Math.round(400*img.height/img.width);
+        c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h); pendingThumb=c.toDataURL('image/jpeg',0.72);
+        $('uThumbLabel').textContent='✅ '+f.name; }; img.src=URL.createObjectURL(f); };
+    $('uFiles').onchange=e=>{ for(const f of e.target.files) pendingFiles.push(f); renderChips(); e.target.value=''; };
   }
-  function open(model) {
-    D = model; undoStack.length = 0;
-    $('edTitle').value = D.title; $('edCat').textContent = D.category;
-    $('edW').value = D.w; $('edH').value = D.h;
-    $('edK').value = D.palette.length;
-    render(); go('editor');
+  function renderChips(){ $('uFileChips').innerHTML=pendingFiles.map((f,i)=>`<span class="file-chip">${fileIcon(f.name)} ${f.name} <button onclick="Admin.rmChip(${i})">✕</button></span>`).join(''); }
+  function rmChip(i){ pendingFiles.splice(i,1); renderChips(); }
+  async function upload(){
+    const name=$('uName').value.trim(); const err=$('uError'); err.textContent='';
+    if(!name){err.textContent='Enter a design name.';return;}
+    if(!pendingThumb){err.textContent='Choose a preview image.';return;}
+    if(!pendingFiles.length){err.textContent='Add at least one production file.';return;}
+    const files=[];
+    for(const f of pendingFiles){ const id=rid(); await IDB.put(id,f); files.push({id,name:f.name,type:f.type||'application/octet-stream',size:f.size}); }
+    const list=Designs.all();
+    list.unshift({id:'d'+Date.now(),name,category:$('uCat').value,description:$('uDesc').value.trim()||('Production '+$('uCat').value.toLowerCase()+' design.'),thumb:pendingThumb,files,date:new Date().toLocaleDateString(),published:true});
+    Designs.save(list);
+    $('uName').value='';$('uDesc').value='';$('uThumbLabel').textContent='Click to choose a preview image (PNG/JPG)';
+    pendingThumb=null;pendingFiles=[];renderChips();
+    go('adminDesigns');
   }
-  function fromStudio() {
-    const last = App.getLast();
-    if (last) open({ ...last, indices: new Uint8Array(last.indices),
-      palette: last.palette.map(c => [...c]), pct: [...last.pct] });
+  function designs(){
+    const list=Designs.all();
+    $('adDesignsEmpty').classList.toggle('hidden',list.length>0);
+    $('adDesigns').innerHTML = list.length? `<thead><tr><th>Design</th><th>Section</th><th>Files</th><th>Status</th><th>Actions</th></tr></thead><tbody>${list.map(d=>`
+      <tr><td><img class="mini-thumb" src="${d.thumb}"> ${d.name}</td><td>${d.category}</td>
+      <td>${d.files.map(f=>`<span class="file-chip" style="cursor:pointer" onclick="Admin.dl('${d.id}','${f.id}')">${fileIcon(f.name)} ${f.name.split('.').pop().toUpperCase()}</span>`).join(' ')}</td>
+      <td><span class="pill ${d.published?'ok':'off'}">${d.published?'Published':'Hidden'}</span></td>
+      <td><button class="tbtn" onclick="Admin.togglePub('${d.id}')">${d.published?'Hide':'Publish'}</button>
+      <button class="tbtn danger" onclick="Admin.del('${d.id}')">Delete</button></td></tr>`).join('')}</tbody>` : '';
   }
-  function computePct() {
-    const counts = new Array(D.palette.length).fill(0);
-    D.indices.forEach(i => counts[i]++);
-    D.pct = counts.map(c => +(c * 100 / D.indices.length).toFixed(2));
+  async function dl(did,fid){ const d=Designs.all().find(x=>x.id===did); await downloadFile(d.files.find(f=>f.id===fid)); }
+  function togglePub(id){ const l=Designs.all(); const d=l.find(x=>x.id===id); d.published=!d.published; Designs.save(l); designs(); }
+  async function del(id){ const l=Designs.all(); const d=l.find(x=>x.id===id); if(d){ for(const f of d.files) await IDB.del(f.id); } Designs.save(l.filter(x=>x.id!==id)); designs(); }
+  function customersScreen(){
+    const cu=customers();
+    $('adCustomers').innerHTML=`<thead><tr><th>Customer</th><th>Email</th><th>Joined</th><th>Download Access</th><th>Action</th></tr></thead><tbody>${cu.map(u=>`
+      <tr><td><span class="av">${(u.name||'?')[0]}</span>${u.name}</td><td>${u.email}</td><td>${u.joined||'—'}</td>
+      <td><span class="pill ${u.canDownload?'ok':'off'}">${u.canDownload?'Approved':'View only'}</span></td>
+      <td><button class="tbtn" onclick="Admin.toggleDl('${u.email}')">${u.canDownload?'Revoke':'Approve'}</button></td></tr>`).join('')
+      || '<tr><td colspan="5" style="color:var(--ink-dim)">No customers yet.</td></tr>'}</tbody>`;
   }
-  function paint() { paintModel(D, $('edCanvas'), $('edTile').checked); }
-  function render() {
-    if (!D) return;
-    paint();
-    $('edMetrics').innerHTML = [
-      ['Total Hooks', D.w.toLocaleString()], ['Total Cards', D.h.toLocaleString()],
-      ['Width', (D.w / D.metrics.reed).toFixed(2) + '"'],
-      ['Total Inches', (D.h / D.metrics.pick).toFixed(2) + '"'],
-      ['Colours (K)', D.palette.length], ['Reed / Pick', D.metrics.reed + ' / ' + D.metrics.pick],
-    ].map(([k, v]) => `<div class="metric"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
-    $('edLayers').innerHTML = D.palette.map((rgb, i) => `
-      <div class="layer-row">
-        <input type="color" value="${rgbToHex(rgb)}" onchange="Editor.recolor(${i}, this.value)">
-        <span>${i} · ${YARNS[i]}</span>
-        <span class="pct">${D.pct[i].toFixed(2)}%</span>
-      </div>`).join('');
-  }
-
-  /* --- edit operations (all loom-true: operate on the indexed matrix) --- */
-  function recolor(i, hex) { snapshot(); D.palette[i] = hexToRgb(hex); render(); }
-  function recolorRGB(i, rgb) { snapshot(); D.palette[i] = rgb; render(); }
-  function flipH() {
-    snapshot();
-    const { indices, w, h } = D;
-    for (let y = 0; y < h; y++) {
-      const row = indices.subarray(y * w, y * w + w); row.reverse();
-    }
-    render();
-  }
-  function flipV() {
-    snapshot();
-    const { indices, w, h } = D;
-    for (let y = 0; y < h >> 1; y++) {
-      const a = indices.subarray(y * w, y * w + w);
-      const b = indices.subarray((h - 1 - y) * w, (h - 1 - y) * w + w);
-      const tmp = new Uint8Array(a); a.set(b); b.set(tmp);
-    }
-    render();
-  }
-  function rotate180() { snapshot(); D.indices.reverse(); render(); }
-  function mirrorPanel() {
-    snapshot();
-    const { indices, w, h } = D;
-    for (let y = 0; y < h; y++)
-      for (let x = w >> 1; x < w; x++)
-        indices[y * w + x] = indices[y * w + (w - 1 - x)];
-    computePct(); render();
-  }
-  function invertLayers() {
-    snapshot();
-    const a = D.palette[0]; D.palette[0] = D.palette[1] || a; D.palette[1] = a;
-    render();
-  }
-  function scalePattern(f) {
-    snapshot();
-    const { indices, w, h } = D;
-    const sw = Math.max(8, Math.round(w * f)), sh = Math.max(8, Math.round(h * f));
-    const scaled = new Uint8Array(sw * sh);
-    for (let y = 0; y < sh; y++)
-      for (let x = 0; x < sw; x++)
-        scaled[y * sw + x] = indices[Math.min(h-1, Math.floor(y / f)) * w + Math.min(w-1, Math.floor(x / f))];
-    const out = new Uint8Array(w * h);
-    for (let y = 0; y < h; y++)
-      for (let x = 0; x < w; x++)
-        out[y * w + x] = scaled[(y % sh) * sw + (x % sw)];
-    D.indices = out; computePct(); render();
-  }
-  function variation() {   // AI re-work: shift every yarn colour's hue in harmony
-    snapshot();
-    const shift = 40 + Math.random() * 240;
-    D.palette = D.palette.map((rgb, i) => {
-      if (i === 0) return rgb;   // keep ground stable
-      let [r, g, b] = rgb.map(v => v / 255);
-      const mx = Math.max(r,g,b), mn = Math.min(r,g,b), l = (mx+mn)/2;
-      let hDeg = 0, s = 0;
-      if (mx !== mn) {
-        const d = mx - mn;
-        s = l > .5 ? d/(2-mx-mn) : d/(mx+mn);
-        hDeg = mx === r ? ((g-b)/d + (g<b?6:0)) : mx === g ? (b-r)/d + 2 : (r-g)/d + 4;
-        hDeg *= 60;
-      }
-      hDeg = (hDeg + shift) % 360;
-      const c = (1 - Math.abs(2*l - 1)) * s, x2 = c * (1 - Math.abs((hDeg/60) % 2 - 1)), m = l - c/2;
-      const [r2,g2,b2] = hDeg < 60 ? [c,x2,0] : hDeg < 120 ? [x2,c,0] : hDeg < 180 ? [0,c,x2]
-        : hDeg < 240 ? [0,x2,c] : hDeg < 300 ? [x2,0,c] : [c,0,x2];
-      return [(r2+m)*255, (g2+m)*255, (b2+m)*255].map(Math.round);
-    });
-    render();
-  }
-  function requantize() {
-    snapshot();
-    const k = +$('edK').value;
-    const off = paintModel(D, document.createElement('canvas'), false);
-    const q = quantize(off.getContext('2d').getImageData(0, 0, D.w, D.h), k);
-    D.indices = q.indices; D.palette = q.palette; D.pct = q.pct;
-    render();
-  }
-  function resizeMatrix() {
-    const w2 = Math.min(Math.max(+$('edW').value || D.w, 64), 2688);
-    const h2 = Math.min(Math.max(+$('edH').value || D.h, 64), 4400);
-    if (w2 === D.w && h2 === D.h) return;
-    snapshot();
-    const out = new Uint8Array(w2 * h2);
-    for (let y = 0; y < h2; y++)
-      for (let x = 0; x < w2; x++)
-        out[y * w2 + x] = D.indices[Math.floor(y * D.h / h2) * D.w + Math.floor(x * D.w / w2)];
-    D.indices = out; D.w = w2; D.h = h2;
-    $('edW').value = w2; $('edH').value = h2;
-    computePct(); render();
-  }
-  function currentModel() {
-    return { ...D, title: $('edTitle').value.trim() || D.title };
-  }
-  function save() {
-    const m = currentModel();
-    const off = paintModel(m, document.createElement('canvas'), false);
-    Hist.add(m, off);
-    Chat.notify('saved');
-  }
-  function saveCopy() {
-    const m = currentModel(); m.title += ' (Copy)';
-    const off = paintModel(m, document.createElement('canvas'), false);
-    Hist.add(m, off);
-    Chat.notify('saved');
-  }
-  const downloadPNG = () => {
-    const m = currentModel();
-    paintModel(m, document.createElement('canvas'), false)
-      .toBlob(b => saveBlob(b, m.title.replace(/\s+/g,'_') + '_render.png'));
-  };
-  const downloadBMP = () => {
-    const m = currentModel();
-    saveBlob(modelBMP(m), m.title.replace(/\s+/g,'_') + '_production.bmp');
-  };
-  const printCard = () => {
-    const m = currentModel();
-    fillPrintCard(m, paintModel(m, document.createElement('canvas'), false));
-  };
-  return { open, fromStudio, undo, paint, render, recolor, recolorRGB, flipH, flipV,
-    rotate180, mirrorPanel, invertLayers, scalePattern, variation, requantize,
-    resizeMatrix, save, saveCopy, downloadPNG, downloadBMP, printCard, isOpen,
-    get: () => D };
+  function toggleDl(email){ const l=Users.all(); const u=l.find(x=>x.email===email); if(u)u.canDownload=!u.canDownload; Users.save(l); customersScreen(); }
+  return { dashboard, initUpload, upload, rmChip, designs, dl, togglePub, del, customers:customersScreen, toggleDl };
 })();
 
-/* =============== trilingual AI assistant =============== */
-const Chat = (() => {
-  const COLOR_DEFS = [
-    { rgb:[200,30,45],  names:{en:'red',hi:'लाल',gu:'લાલ'},       words:['red','लाल','લાલ','lal'] },
-    { rgb:[122,18,48],  names:{en:'maroon',hi:'मैरून',gu:'મરૂન'},  words:['maroon','मैरून','મરૂન'] },
-    { rgb:[212,160,23], names:{en:'gold',hi:'गोल्ड',gu:'ગોલ્ડ'},   words:['gold','golden','गोल्ड','सुनहरा','ગોલ્ડ','સોનેરી','sona'] },
-    { rgb:[26,58,92],   names:{en:'blue',hi:'नीला',gu:'વાદળી'},    words:['blue','नीला','વાદળી','blu','vadli','nila'] },
-    { rgb:[14,77,58],   names:{en:'green',hi:'हरा',gu:'લીલો'},     words:['green','हरा','લીલો','lilo','hara'] },
-    { rgb:[214,74,125], names:{en:'pink',hi:'गुलाबी',gu:'ગુલાબી'}, words:['pink','गुलाबी','ગુલાબી','gulabi'] },
-    { rgb:[61,26,79],   names:{en:'purple',hi:'बैंगनी',gu:'જાંબલી'},words:['purple','बैंगनी','જાંબલી','jambli'] },
-    { rgb:[242,232,213],names:{en:'cream',hi:'क्रीम',gu:'ક્રીમ'},   words:['cream','white','सफेद','क्रीम','સફેદ','ક્રીમ','safed'] },
-    { rgb:[34,34,40],   names:{en:'black',hi:'काला',gu:'કાળો'},    words:['black','काला','કાળો','kala','kalo'] },
-    { rgb:[230,140,30], names:{en:'orange',hi:'नारंगी',gu:'નારંગી'},words:['orange','नारंगी','નારંગી','kesari','केसरी'] },
-    { rgb:[15,74,82],   names:{en:'teal',hi:'टील',gu:'ટીલ'},       words:['teal','टील','ટીલ'] },
-    { rgb:[200,204,216],names:{en:'silver',hi:'सिल्वर',gu:'સિલ્વર'},words:['silver','सिल्वर','સિલ્વર','chandi','चांदी'] },
-  ];
-  const LAYER_DEFS = [
-    { i:0, names:{en:'Ground',hi:'ग्राउंड',gu:'ગ્રાઉન્ડ'},
-      words:['ground','background','base','जमीन','ग्राउंड','बैकग्राउंड','ગ્રાઉન્ડ','જમીન','jamin'] },
-    { i:1, names:{en:'Zari / Butti',hi:'जरी/बूटी',gu:'ઝરી/બુટ્ટી'},
-      words:['zari','jari','जरी','ઝરી','butti','buti','बूटी','બુટ્ટી','motif','flower','फूल','ફૂલ','ful'] },
-    { i:2, names:{en:'Jari Z',hi:'जरी Z',gu:'ઝરી Z'}, words:['jari z','second','दूसरा','બીજો'] },
-    { i:3, names:{en:'MX',hi:'MX',gu:'MX'}, words:['mx','mix','मिक्स','મિક્સ'] },
-  ];
-  const A = {
-    flip:      ['flip','mirror','उल्टा','उलटा','मिरर','ઊંધું','ઊંધી','ulta','undhu','palto'],
-    bigger:    ['bigger','big','large','zoom in','बड़ा','बड़ी','મોટું','મોટી','mota','moti','motu','bada','badi'],
-    smaller:   ['smaller','small','zoom out','छोटा','छोटी','નાનું','નાની','nana','nani','nanu','chota','choti'],
-    variation: ['variation','again','regenerate','another','new design','फिर','दुबारा','दूसरी','नई','ફરી','બીજી','નવી','fari','firse','biji','navi'],
-    sample:    ['sample','सैंपल','સેમ્પલ','demo design'],
-    help:      ['help','मदद','હેલ્પ','મદદ','madad','commands'],
-    hello:     ['hello','hi','hey','namaste','नमस्ते','નમસ્તે','kem cho','કેમ છો'],
-  };
-  const R = {
-    en: {
-      hello: "Namaste! 🙏 I edit your design for you. Try:\n• \"make ground red\"\n• \"zari gold karo\"\n• \"flip design\"\n• \"butti smaller\"\n• \"new variation\"",
-      help:  "I understand English, हिंदी and ગુજરાતી.\nCommands: change any layer's colour (ground/zari + colour name), flip / mirror, butti bigger / smaller, new variation, open sample.",
-      color: (l, c) => `Done ✔ ${l} recoloured to ${c}. Check the canvas!`,
-      flip: "Done ✔ design mirrored.",
-      bigger: "Done ✔ pattern scaled bigger.",
-      smaller: "Done ✔ pattern scaled smaller — finer butti.",
-      variation: "Done ✨ new colour variation generated. Say it again for another one!",
-      noDesign: "First open a design — go to Gallery and press 'Open & Edit', or say \"open sample\".",
-      opened: "I opened a sample design in the editor 🎛 Now tell me your changes!",
-      saved: "Design saved to My Designs ✔",
-      fallback: "I didn't catch that. Try: \"ground blue karo\", \"flip design\", \"butti smaller\", \"new variation\" — or say \"help\".",
-    },
-    hi: {
-      hello: "नमस्ते! 🙏 मैं आपकी डिज़ाइन एडिट कर देता हूँ। बोलिए:\n• \"ग्राउंड लाल करो\"\n• \"जरी गोल्ड करो\"\n• \"डिज़ाइन उल्टा करो\"\n• \"बूटी छोटी करो\"\n• \"नई वेरिएशन\"",
-      help: "मैं English, हिंदी और ગુજરાતી समझता हूँ।\nकमांड: किसी भी लेयर का रंग बदलना, डिज़ाइन उल्टा करना, बूटी बड़ी/छोटी, नई वेरिएशन, सैंपल खोलना।",
-      color: (l, c) => `हो गया ✔ ${l} का रंग ${c} कर दिया। कैनवास देखिए!`,
-      flip: "हो गया ✔ डिज़ाइन मिरर कर दी।",
-      bigger: "हो गया ✔ पैटर्न बड़ा कर दिया।",
-      smaller: "हो गया ✔ बूटी छोटी (महीन) कर दी।",
-      variation: "हो गया ✨ नई कलर वेरिएशन बना दी। दूसरी चाहिए तो फिर बोलिए!",
-      noDesign: "पहले कोई डिज़ाइन खोलिए — गैलरी में 'Open & Edit' दबाइए, या बोलिए \"सैंपल खोलो\"।",
-      opened: "सैंपल डिज़ाइन एडिटर में खोल दी 🎛 अब बताइए क्या बदलना है!",
-      saved: "डिज़ाइन My Designs में सेव हो गई ✔",
-      fallback: "समझ नहीं आया। ऐसे बोलिए: \"ग्राउंड नीला करो\", \"डिज़ाइन उल्टा करो\", \"बूटी छोटी करो\", \"नई वेरिएशन\" — या \"मदद\" बोलिए।",
-    },
-    gu: {
-      hello: "નમસ્તે! 🙏 હું તમારી ડિઝાઇન એડિટ કરી આપું છું. બોલો:\n• \"ગ્રાઉન્ડ લાલ કરો\"\n• \"ઝરી ગોલ્ડ કરો\"\n• \"ડિઝાઇન ઊંધી કરો\"\n• \"બુટ્ટી નાની કરો\"\n• \"નવી વેરિએશન\"",
-      help: "હું English, હિન્દી અને ગુજરાતી સમજું છું.\nકમાન્ડ: કોઈપણ લેયરનો કલર બદલવો, ડિઝાઇન ઊંધી કરવી, બુટ્ટી મોટી/નાની, નવી વેરિએશન, સેમ્પલ ખોલવું.",
-      color: (l, c) => `થઈ ગયું ✔ ${l} નો કલર ${c} કરી દીધો. કેનવાસ જુઓ!`,
-      flip: "થઈ ગયું ✔ ડિઝાઇન મિરર કરી દીધી.",
-      bigger: "થઈ ગયું ✔ પેટર્ન મોટી કરી દીધી.",
-      smaller: "થઈ ગયું ✔ બુટ્ટી નાની (ઝીણી) કરી દીધી.",
-      variation: "થઈ ગયું ✨ નવી કલર વેરિએશન બનાવી. બીજી જોઈએ તો ફરી બોલો!",
-      noDesign: "પહેલા કોઈ ડિઝાઇન ખોલો — ગેલેરીમાં 'Open & Edit' દબાવો, અથવા બોલો \"સેમ્પલ ખોલો\".",
-      opened: "સેમ્પલ ડિઝાઇન એડિટરમાં ખોલી દીધી 🎛 હવે કહો શું બદલવું છે!",
-      saved: "ડિઝાઇન My Designs માં સેવ થઈ ગઈ ✔",
-      fallback: "સમજાયું નહીં. આમ બોલો: \"ગ્રાઉન્ડ વાદળી કરો\", \"ડિઝાઇન ઊંધી કરો\", \"બુટ્ટી નાની કરો\", \"નવી વેરિએશન\" — અથવા \"હેલ્પ\" બોલો.",
-    },
-  };
-  const CHIPS = ["Ground red karo", "जरी गोल्ड करो", "ડિઝાઇન ઊંધી કરો", "Butti smaller", "New variation", "Help"];
-
-  let lang = 'en';
-  function detectLang(t) {
-    if (/[઀-૿]/.test(t)) return 'gu';
-    if (/[ऀ-ॿ]/.test(t)) return 'hi';
-    return 'en';
+/* ===== app / auth ===== */
+const App=(()=>{
+  let authMode='login', authRole='customer';
+  const ADMIN={email:'admin@newcraft.ai',pass:'admin123',name:'Catalog Admin'};
+  const user=()=>JSON.parse(localStorage.getItem('nc_session')||'null');
+  function session(u){ localStorage.setItem('nc_session',JSON.stringify(u)); renderNav(); go(u.role==='admin'?'admin':'catalog'); }
+  function logout(){ localStorage.removeItem('nc_session'); renderNav(); go('home'); }
+  const CUST_NAV=[['home','Home'],['catalog','Catalog']], ADMIN_NAV=[['admin','Dashboard'],['adminUpload','Upload'],['adminDesigns','Designs'],['adminCustomers','Customers']], PUB=[['home','Home']];
+  function renderNav(){
+    const u=user(); const items=!u?PUB:(u.role==='admin'?ADMIN_NAV:CUST_NAV);
+    $('mainNav').innerHTML=items.map(([s,l])=>`<a data-nav="${s}" onclick="go('${s}')">${l}</a>`).join('');
+    $('navAuth').innerHTML=u?`<div class="glass user-chip"><span>${u.name}${u.role==='admin'?'<span class="admin-badge">ADMIN</span>':''}</span><button onclick="App.logout()" title="Sign out">⎋</button></div>`
+      :`<a class="btn btn-gold" style="padding:10px 22px;font-size:.84rem" onclick="go('auth')">Sign In</a>`;
   }
-  const has = (t, words) => words.some(w => t.includes(w));
-
-  function open() { $('chatPanel').classList.remove('hidden'); $('chatText').focus(); }
-  function close() { $('chatPanel').classList.add('hidden'); }
-  function toggle() { $('chatPanel').classList.toggle('hidden'); }
-
-  function addMsg(text, who) {
-    const div = document.createElement('div');
-    div.className = 'msg ' + who; div.textContent = text;
-    $('chatMsgs').appendChild(div);
-    $('chatMsgs').scrollTop = 1e9;
-    return div;
+  function setAuthRole(role){
+    authRole=role; const admin=role==='admin';
+    $('roleTabCustomer').classList.toggle('active',!admin); $('roleTabAdmin').classList.toggle('active',admin);
+    $('adminHint').classList.toggle('hidden',!admin); $('authToggleWrap').classList.toggle('hidden',admin);
+    if(admin)authMode='login'; setAuthMode(authMode);
   }
-  function botReply(text) {
-    const t = addMsg('…', 'bot typing');
-    setTimeout(() => { t.classList.remove('typing'); t.textContent = text;
-      $('chatMsgs').scrollTop = 1e9; }, 450);
+  function gotoLogin(role){ go('auth'); setAuthRole(role); }
+  function setAuthMode(m){
+    authMode=m; const login=m==='login', admin=authRole==='admin';
+    $('authTitle').textContent=admin?'Admin Login':(login?'Welcome back':'Create your account');
+    $('authSub').textContent=admin?'Sign in to manage the catalog.':(login?'Sign in to browse and download designs.':'Register to browse the design catalog.');
+    $('aName').classList.toggle('hidden',login||admin); $('aName').required=!(login||admin);
+    $('authSubmit').textContent=login?'Sign In':'Create Account';
+    $('authToggleTxt').textContent=login?'New here?':'Already have an account?';
+    $('authToggle').textContent=login?'Create an account':'Sign in'; $('authError').textContent='';
   }
-  function notify(key) { if (!$('chatPanel').classList.contains('hidden')) botReply(R[lang][key]); }
-
-  function ensureDesign() {
-    if (Editor.isOpen()) return true;
-    const last = App.getLast();
-    if (last) { Editor.fromStudio(); return true; }
-    return false;
-  }
-  function openSample() {
-    Gallery.edit(SAMPLES[0].id);
-    botReply(R[lang].opened);
-  }
-
-  function process(raw) {
-    const t = raw.toLowerCase();
-    lang = detectLang(raw);
-    const S = R[lang];
-
-    if (has(t, A.help)) return botReply(S.help);
-    if (has(t, A.sample)) return App.user() ? openSample() : botReply(S.noDesign);
-
-    // commands that need an open design
-    const needsDesign =
-      has(t, A.flip) || has(t, A.bigger) || has(t, A.smaller) || has(t, A.variation) ||
-      COLOR_DEFS.some(c => has(t, c.words));
-    if (needsDesign && !ensureDesign()) return botReply(S.noDesign);
-
-    if (has(t, A.flip)) { Editor.flipH(); go('editor'); return botReply(S.flip); }
-    if (has(t, A.smaller)) { Editor.scalePattern(0.72); go('editor'); return botReply(S.smaller); }
-    if (has(t, A.bigger)) { Editor.scalePattern(1.4); go('editor'); return botReply(S.bigger); }
-    if (has(t, A.variation)) { Editor.variation(); go('editor'); return botReply(S.variation); }
-
-    const color = COLOR_DEFS.find(c => has(t, c.words));
-    if (color) {
-      const layerDef = LAYER_DEFS.find(l => has(t, l.words)) || LAYER_DEFS[1];
-      const D = Editor.get();
-      const li = Math.min(layerDef.i, D.palette.length - 1);
-      Editor.recolorRGB(li, [...color.rgb]);
-      go('editor');
-      return botReply(S.color(layerDef.names[lang], color.names[lang]));
-    }
-
-    if (has(t, A.hello)) return botReply(S.hello);
-    botReply(S.fallback);
-  }
-
-  function send(text) {
-    const v = (text ?? $('chatText').value).trim();
-    if (!v) return;
-    addMsg(v, 'me');
-    $('chatText').value = '';
-    process(v);
-  }
-
-  function init() {
-    $('chatFab').addEventListener('click', toggle);
-    $('chatSend').addEventListener('click', () => send());
-    $('chatText').addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
-    $('chatChips').innerHTML = CHIPS.map(c =>
-      `<div class="cchip" onclick="Chat.send('${c}')">${c}</div>`).join('');
-    addMsg(R.en.hello, 'bot');
-  }
-  return { init, open, close, send, notify };
-})();
-
-/* =============== app (auth + studio) =============== */
-/* =============== machine store =============== */
-const Machines = {
-  all: () => JSON.parse(localStorage.getItem('nc_machines') || '[]'),
-  save: list => localStorage.setItem('nc_machines', JSON.stringify(list)),
-};
-
-/* =============== demo-data seeder (runs once) =============== */
-function seedDemoData() {
-  if (localStorage.getItem('nc_seeded_v1')) return;
-
-  // demo customers
-  const demoUsers = [
-    { name:'Rajesh Textiles', email:'rajesh@surat.com',   pass:'demo1234', role:'customer', joined:'2026-05-12', active:true },
-    { name:'Anil Sarees',     email:'anil@sarees.in',     pass:'demo1234', role:'customer', joined:'2026-05-28', active:true },
-    { name:'Priya Fashion',   email:'priya@fashion.com',  pass:'demo1234', role:'customer', joined:'2026-06-15', active:true },
-    { name:'Kiran Fabrics',   email:'kiran@fabrics.com',  pass:'demo1234', role:'customer', joined:'2026-06-30', active:false },
-  ];
-  const existing = JSON.parse(localStorage.getItem('nc_users') || '[]');
-  const merged = existing.slice();
-  demoUsers.forEach(u => { if (!merged.some(x => x.email === u.email)) merged.push(u); });
-  localStorage.setItem('nc_users', JSON.stringify(merged));
-
-  // demo designs owned by them (built from the sample generators)
-  const plan = [
-    ['border1','rajesh@surat.com','Rajesh Textiles','2026-06-02'],
-    ['palav1', 'rajesh@surat.com','Rajesh Textiles','2026-06-18'],
-    ['butti1', 'anil@sarees.in',  'Anil Sarees',    '2026-06-05'],
-    ['blouse1','anil@sarees.in',  'Anil Sarees',    '2026-06-22'],
-    ['leh1',   'priya@fashion.com','Priya Fashion', '2026-06-20'],
-    ['piece1', 'priya@fashion.com','Priya Fashion', '2026-07-01'],
-    ['border2','priya@fashion.com','Priya Fashion', '2026-07-04'],
-    ['butti2', 'kiran@fabrics.com','Kiran Fabrics',  '2026-06-28'],
-  ];
-  const hist = JSON.parse(localStorage.getItem('nc_history') || '[]');
-  plan.forEach(([sid, owner, ownerName, date], n) => {
-    const s = SAMPLES.find(x => x.id === sid);
-    const W = 448, H = 560;
-    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-    s.draw(cv.getContext('2d'), W, H, s.pal);
-    const q = quantize(cv.getContext('2d').getImageData(0, 0, W, H), 4);
-    const model = { ...q, w: W, h: H, title: s.title, party: ownerName, category: s.cat };
-    // build thumbnail + push with explicit owner/date
-    const off = paintModel(model, document.createElement('canvas'), false);
-    const tc = document.createElement('canvas');
-    tc.width = 320; tc.height = 400;
-    tc.getContext('2d').drawImage(off, 0, 0, 320, 400);
-    hist.push({ id: 1717000000000 + n, title: s.title, party: ownerName, category: s.cat,
-      date, hooks: W, cards: H, k: 4, owner, ownerName, thumb: tc.toDataURL('image/jpeg', 0.72) });
-  });
-  localStorage.setItem('nc_history', JSON.stringify(hist));
-
-  // demo machines
-  Machines.save([
-    { id:1, name:'Staubli LX 5376', hooks:5376, reed:108, pick:48 },
-    { id:2, name:'Bonas Jacquard 2688', hooks:2688, reed:96, pick:44 },
-    { id:3, name:'Staubli CX 1344', hooks:1344, reed:80, pick:40 },
-  ]);
-
-  localStorage.setItem('nc_seeded_v1', '1');
-}
-
-/* =============== admin panels =============== */
-const Admin = (() => {
-  const users = () => JSON.parse(localStorage.getItem('nc_users') || '[]')
-    .filter(u => u.role !== 'admin');
-  const designCount = email => Hist.all().filter(d => d.owner === email).length;
-  let designFilter = 'All';
-
-  function dashboard() {
-    const all = Hist.all(), us = users();
-    const sections = new Set(all.map(d => d.category)).size;
-    $('kpiRow').innerHTML = [
-      ['👥', us.length, 'CUSTOMERS'],
-      ['🎨', all.length, 'TOTAL DESIGNS'],
-      ['🧵', sections, 'SECTIONS USED'],
-      ['⚙️', Machines.all().length, 'MACHINES'],
-    ].map(([ic, n, t]) =>
-      `<div class="glass kpi"><div class="kpi-ic">${ic}</div><div class="kpi-n">${n}</div><div class="kpi-t">${t}</div></div>`).join('');
-
-    // bar chart by section
-    const counts = {};
-    all.forEach(d => counts[d.category] = (counts[d.category] || 0) + 1);
-    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const max = Math.max(1, ...entries.map(e => e[1]));
-    $('sectionChart').innerHTML = entries.length ? entries.map(([cat, n]) => `
-      <div class="bar-row"><span>${cat}</span>
-        <div class="bar-track"><div class="bar-fill" style="width:0" data-w="${(n/max*100).toFixed(0)}"></div></div>
-        <span class="bar-val">${n}</span></div>`).join('')
-      : '<p style="color:var(--ink-dim);font-size:.85rem">No designs yet.</p>';
-    setTimeout(() => document.querySelectorAll('#sectionChart .bar-fill')
-      .forEach(b => b.style.width = b.dataset.w + '%'), 60);
-
-    // recent designs
-    $('recentDesigns').innerHTML = all.slice(0, 6).map(d => `
-      <div class="mini-item"><img src="${d.thumb}" alt="">
-        <div class="mi-body"><b>${d.title}</b><span>${d.ownerName} · ${d.category}</span></div>
-        <div class="mi-meta">${d.date}<br>${(d.hooks||0).toLocaleString()}×${(d.cards||0).toLocaleString()}</div>
-      </div>`).join('') || '<p style="color:var(--ink-dim);font-size:.85rem">No designs yet.</p>';
-
-    // recent customers
-    $('recentUsers').innerHTML = `<thead><tr><th>Customer</th><th>Email</th><th>Designs</th><th>Status</th></tr></thead>
-      <tbody>${us.slice(0, 5).map(u => `
-        <tr><td><span class="av">${(u.name||'?')[0]}</span>${u.name}</td>
-          <td>${u.email}</td><td>${designCount(u.email)}</td>
-          <td><span class="pill ${u.active === false ? 'off' : 'ok'}">${u.active === false ? 'Blocked' : 'Active'}</span></td></tr>`).join('')}</tbody>`;
-  }
-
-  function usersScreen() {
-    const us = users();
-    $('usersTable').innerHTML = `<thead><tr><th>Customer</th><th>Email</th><th>Joined</th><th>Designs</th><th>Status</th><th>Action</th></tr></thead>
-      <tbody>${us.map(u => `
-        <tr><td><span class="av">${(u.name||'?')[0]}</span>${u.name}</td>
-          <td>${u.email}</td><td>${u.joined || '—'}</td><td>${designCount(u.email)}</td>
-          <td><span class="pill ${u.active === false ? 'off' : 'ok'}">${u.active === false ? 'Blocked' : 'Active'}</span></td>
-          <td><button class="tbtn" onclick="Admin.toggleUser('${u.email}')">${u.active === false ? 'Activate' : 'Block'}</button></td></tr>`).join('')
-        || '<tr><td colspan="6" style="color:var(--ink-dim)">No customers yet.</td></tr>'}</tbody>`;
-  }
-  function toggleUser(email) {
-    const all = JSON.parse(localStorage.getItem('nc_users') || '[]');
-    const u = all.find(x => x.email === email);
-    if (u) { u.active = u.active === false; localStorage.setItem('nc_users', JSON.stringify(all)); }
-    usersScreen();
-  }
-
-  function designs() {
-    $('adminDesignFilters').innerHTML = CATEGORIES.map(c =>
-      `<div class="fchip ${c === designFilter ? 'active' : ''}" onclick="Admin.setDesignFilter('${c}')">${c}</div>`).join('');
-    const all = Hist.all().filter(d => designFilter === 'All' || d.category === designFilter);
-    $('adminDesignEmpty').classList.toggle('hidden', all.length > 0);
-    $('adminDesignGrid').innerHTML = all.map(d => `
-      <div class="glass gal-card"><img src="${d.thumb}" style="width:100%;aspect-ratio:4/5;object-fit:cover" alt="">
-        <div class="gal-body"><h3>${d.title}</h3><span class="gal-cat">${d.category}</span>
-          <p style="color:var(--ink-dim);font-size:.74rem;margin-top:8px">👤 ${d.ownerName} · ${d.date}<br>
-          ${(d.hooks||0).toLocaleString()} × ${(d.cards||0).toLocaleString()} · K${d.k}</p></div>
-      </div>`).join('');
-  }
-  function setDesignFilter(c) { designFilter = c; designs(); }
-
-  function machines() {
-    const list = Machines.all();
-    $('machGrid').innerHTML = list.map(m => `
-      <div class="glass mach"><h4>⚙️ ${m.name}</h4>
-        <div class="mrow"><span>Total Hooks</span><b>${m.hooks.toLocaleString()}</b></div>
-        <div class="mrow"><span>Reed</span><b>${m.reed}</b></div>
-        <div class="mrow"><span>Loom Pick</span><b>${m.pick}</b></div>
-        <div class="mrow"><span>Max Width</span><b>${(m.hooks/m.reed).toFixed(1)}"</b></div>
-        <button class="tbtn" style="margin-top:12px" onclick="Admin.delMachine(${m.id})">🗑 Remove</button>
-      </div>`).join('') || '<p style="color:var(--ink-dim);font-size:.85rem">No machines configured.</p>';
-  }
-  function addMachine() {
-    const name = $('mName').value.trim();
-    if (!name) { $('mName').focus(); return; }
-    const list = Machines.all();
-    list.push({ id: Date.now(), name,
-      hooks: +$('mHooks').value || 5376, reed: +$('mReed').value || 108, pick: +$('mPick').value || 48 });
-    Machines.save(list); $('mName').value = ''; machines();
-  }
-  function delMachine(id) { Machines.save(Machines.all().filter(m => m.id !== id)); machines(); }
-
-  return { dashboard, users: usersScreen, toggleUser, designs, setDesignFilter,
-    machines, addMachine, delMachine };
-})();
-
-const App = (() => {
-  const slotFiles = [null,null,null,null,null];
-  let last = null;
-  let authMode = 'login';
-  let authRole = 'customer';
-  const ADMIN_CREDS = { email:'admin@newcraft.ai', pass:'admin123', name:'Platform Admin' };
-
-  const users = () => JSON.parse(localStorage.getItem('nc_users') || '[]');
-  const user  = () => JSON.parse(localStorage.getItem('nc_session') || 'null');
-  function session(u) {
-    localStorage.setItem('nc_session', JSON.stringify(u));
-    renderNav();
-    go(u.role === 'admin' ? 'admin' : 'studio');
-  }
-  function logout() { localStorage.removeItem('nc_session'); renderNav(); go('home'); }
-
-  const CUSTOMER_NAV = [['home','Home'],['gallery','Gallery'],['studio','Studio'],['history','My Designs']];
-  const ADMIN_NAV = [['admin','Dashboard'],['adminUsers','Customers'],['adminDesigns','All Designs'],['adminMachines','Machines']];
-  const PUBLIC_NAV = [['home','Home'],['gallery','Gallery']];
-  function renderNav() {
-    const u = user();
-    const items = !u ? PUBLIC_NAV : (u.role === 'admin' ? ADMIN_NAV : CUSTOMER_NAV);
-    $('mainNav').innerHTML = items.map(([s, label]) =>
-      `<a data-nav="${s}" onclick="go('${s}')">${label}</a>`).join('');
-    $('navAuth').innerHTML = u
-      ? `<div class="glass user-chip"><span>${u.name}${u.role === 'admin' ? '<span class="admin-badge">ADMIN</span>' : ''}</span>
-         <button onclick="App.logout()" title="Sign out">⎋</button></div>`
-      : `<a class="btn btn-gold" style="padding:10px 22px;font-size:.84rem" onclick="go('auth')">Sign In</a>`;
-  }
-
-  function setAuthRole(role) {
-    authRole = role;
-    const admin = role === 'admin';
-    $('roleTabCustomer').classList.toggle('active', !admin);
-    $('roleTabAdmin').classList.toggle('active', admin);
-    $('adminHint').classList.toggle('hidden', !admin);
-    $('googleBtn').classList.toggle('hidden', admin);
-    $('authDivider').classList.toggle('hidden', admin);
-    $('authToggl-wrap').classList.toggle('hidden', admin);   // admins can't self-register
-    if (admin) setAuthMode('login');
-    setAuthMode(authMode);
-  }
-  function gotoLogin(role) { go('auth'); setAuthRole(role); }
-
-  function setAuthMode(m) {
-    authMode = m;
-    const login = m === 'login';
-    const admin = authRole === 'admin';
-    $('authTitle').textContent = admin ? 'Admin Login' : (login ? 'Welcome back' : 'Create your account');
-    $('authSub').textContent = admin ? 'Sign in to the business dashboard.'
-      : (login ? 'Sign in to create production designs.' : 'One account for all your parties and designs.');
-    $('aName').classList.toggle('hidden', login || admin);
-    $('authSubmit').textContent = login ? 'Sign In' : 'Create Account';
-    $('authToggleTxt').textContent = login ? 'New to NewCraft?' : 'Already have an account?';
-    $('authToggle').textContent = login ? 'Create an account' : 'Sign in';
-    $('authError').textContent = '';
-  }
-  function authSubmit(e) {
+  function authSubmit(e){
     e.preventDefault();
-    const email = $('aEmail').value.trim().toLowerCase(), pass = $('aPass').value;
-
-    if (authRole === 'admin') {
-      if (email === ADMIN_CREDS.email && pass === ADMIN_CREDS.pass)
-        return session({ name: ADMIN_CREDS.name, email, role: 'admin' });
-      $('authError').textContent = 'Invalid admin credentials.';
-      return;
-    }
-
-    const all = users();
-    if (authMode === 'register') {
-      const name = $('aName').value.trim();
-      if (!name) { $('authError').textContent = 'Enter your full name.'; return; }
-      if (all.some(u => u.email === email)) {
-        $('authError').textContent = 'Account already exists — sign in instead.'; return; }
-      const rec = { name, email, pass, role: 'customer', joined: new Date().toLocaleDateString(), active: true };
-      all.push(rec);
-      localStorage.setItem('nc_users', JSON.stringify(all));
-      session({ name, email, role: 'customer' });
+    const email=$('aEmail').value.trim().toLowerCase(), pass=$('aPass').value;
+    if(authRole==='admin'){ if(email===ADMIN.email&&pass===ADMIN.pass)return session({name:ADMIN.name,email,role:'admin'}); $('authError').textContent='Invalid admin credentials.'; return; }
+    const all=Users.all();
+    if(authMode==='register'){
+      const name=$('aName').value.trim(); if(!name){$('authError').textContent='Enter your full name.';return;}
+      if(all.some(u=>u.email===email)){$('authError').textContent='Account already exists — sign in.';return;}
+      all.push({name,email,pass,role:'customer',canDownload:false,joined:new Date().toLocaleDateString(),active:true}); Users.save(all);
+      session({name,email,role:'customer',canDownload:false});
     } else {
-      const u = all.find(u => u.email === email && u.pass === pass && u.role !== 'admin');
-      if (!u) { $('authError').textContent = 'Incorrect email or password.'; return; }
-      if (u.active === false) { $('authError').textContent = 'This account has been blocked by the admin.'; return; }
-      session({ name: u.name, email: u.email, role: 'customer' });
+      const u=all.find(u=>u.email===email&&u.pass===pass&&u.role!=='admin');
+      if(!u){$('authError').textContent='Incorrect email or password.';return;}
+      session({name:u.name,email:u.email,role:'customer',canDownload:!!u.canDownload});
     }
   }
-  const googleDemo = () => session({ name:'Demo User', email:'demo@gmail.com', role:'customer' });
+  // refresh session canDownload from store (admin may have approved since login)
+  function refreshPerm(){ const s=user(); if(s&&s.role==='customer'){ const u=Users.all().find(x=>x.email===s.email); if(u&&!!u.canDownload!==!!s.canDownload){ s.canDownload=!!u.canDownload; localStorage.setItem('nc_session',JSON.stringify(s)); } } }
 
-  function buildSlots() {
-    ROLES.forEach((role, i) => {
-      const slot = document.createElement('div');
-      slot.className = 'slot';
-      slot.innerHTML = `<input type="file" accept="image/*" hidden>
-        <button class="remove">✕</button><span class="plus">+</span>
-        <span class="role role-mid">${role}</span><span class="role-tag">${role}</span>`;
-      const input = slot.querySelector('input');
-      slot.addEventListener('click', e => { if (!e.target.closest('.remove')) input.click(); });
-      input.addEventListener('change', () => {
-        const f = input.files[0]; if (!f) return;
-        slotFiles[i] = f;
-        let img = slot.querySelector('img');
-        if (!img) { img = document.createElement('img'); slot.prepend(img); }
-        img.src = URL.createObjectURL(f);
-        slot.classList.add('filled');
-      });
-      slot.querySelector('.remove').addEventListener('click', () => {
-        slotFiles[i] = null; input.value = '';
-        slot.querySelector('img')?.remove(); slot.classList.remove('filled');
-      });
-      $('slots').appendChild(slot);
-    });
-  }
-
-  const loadImg = f => new Promise((res, rej) => {
-    const img = new Image();
-    img.onload = () => res(img); img.onerror = rej;
-    img.src = URL.createObjectURL(f);
-  });
-  async function blend(files, size) {
-    const c = document.createElement('canvas'); c.width = c.height = size;
-    const g = c.getContext('2d');
-    const imgs = await Promise.all(files.map(loadImg));
-    g.drawImage(imgs[0], 0, 0, size, size);
-    imgs.slice(1).forEach((im, i) => {
-      g.globalAlpha = 0.5 / (i + 1);
-      g.drawImage(im, 0, 0, size, size);
-    });
-    g.globalAlpha = 1;
-    g.filter = 'saturate(1.35) contrast(1.2)';
-    g.drawImage(c, 0, 0);
-    g.filter = 'none';
-    g.save(); g.translate(size, 0); g.scale(-1, 1);
-    g.drawImage(c, 0, 0, size/2, size, 0, 0, size/2, size);
-    g.restore();
-    return c;
-  }
-  const sleep = ms => new Promise(r => setTimeout(r, ms));
-  function setStep(i) {
-    document.querySelectorAll('.pstep').forEach(el => {
-      const s = +el.dataset.s;
-      el.classList.toggle('done', s < i || i === 4);
-      el.classList.toggle('active', s === i && i !== 4);
-    });
-  }
-
-  async function generate() {
-    const files = slotFiles.filter(Boolean);
-    const err = $('formError'); err.textContent = '';
-    if (!files.length) { err.textContent = 'Upload at least 1 reference image.'; return; }
-    const title = $('fTitle').value.trim() || 'Untitled Design';
-    const party = $('fParty').value.trim() || (user()?.name ?? 'My Party');
-    const k = +$('fColors').value;
-    const hooks = Math.min(Math.max(+$('fHooks').value || 1344, 64), 2688);
-    const reed = +$('fReed').value || 108, pick = +$('fPick').value || 48;
-
-    const btn = $('btnGenerate'); btn.disabled = true;
-    $('resultCard').classList.add('hidden');
-    $('progressCard').classList.remove('hidden');
-    $('jobRef').textContent = 'Job ref: NC-' + Date.now().toString(36).toUpperCase();
-    $('progressCard').scrollIntoView({behavior:'smooth'});
-
-    try {
-      setStep(0); await sleep(500);
-      setStep(1);
-      const tile = await blend(files, 1024); await sleep(400);
-      setStep(2); await sleep(50);
-      const cards = +$('fCards').value || Math.round(hooks * 0.82);
-      const hc = document.createElement('canvas'); hc.width = hooks; hc.height = cards;
-      const hg = hc.getContext('2d'); hg.imageSmoothingEnabled = false;
-      hg.drawImage(tile, 0, 0, hooks, cards);
-      const q = quantize(hg.getImageData(0, 0, hooks, cards), k);
-      await sleep(300);
-      setStep(3);
-      last = { ...q, w: hooks, h: cards, title, party,
-        category: $('fLayout').value, metrics: { reed, pick } };
-      const out = $('outCanvas');
-      const off = paintModel(last, out, false);
-      renderResult();
-      Hist.add(last, off);
-      await sleep(400);
-      setStep(4);
-      $('resultCard').classList.remove('hidden');
-      $('resultCard').scrollIntoView({behavior:'smooth'});
-    } catch (e) {
-      err.textContent = 'Generation failed: ' + e.message;
-    } finally { btn.disabled = false; }
-  }
-
-  function renderResult() {
-    const m = last.metrics;
-    $('metrics').innerHTML = [
-      ['Total Hooks', last.w.toLocaleString()], ['Total Cards', last.h.toLocaleString()],
-      ['Loom Pick', m.pick], ['Reed', m.reed],
-      ['Width', (last.w / m.reed).toFixed(2) + '"'], ['Total Inches', (last.h / m.pick).toFixed(2) + '"'],
-    ].map(([k, v]) => `<div class="metric"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
-    $('yarnRows').innerHTML = last.palette.map((rgb, i) => `
-      <tr><td>${i}</td>
-        <td><div class="swatch" style="background:rgb(${rgb})"></div></td>
-        <td>${YARNS[i]}</td>
-        <td style="text-align:right;font-weight:600">${last.pct[i].toFixed(2)}%</td></tr>`).join('');
-  }
-
-  const downloadPNG = () => $('outCanvas').toBlob(b =>
-    saveBlob(b, last.title.replace(/\s+/g,'_') + '_render.png'));
-  const downloadBMP = () => saveBlob(modelBMP(last), last.title.replace(/\s+/g,'_') + '_production.bmp');
-  const printCard = () => fillPrintCard(last, $('outCanvas'));
-
-  function renderHistory() {
-    const items = Hist.mine();
-    $('histEmpty').classList.toggle('hidden', items.length > 0);
-    $('histGrid').innerHTML = items.map(it => `
-      <div class="glass hist-card">
-        <img src="${it.thumb}" alt="">
-        <div class="hist-body">
-          <button class="hist-del" onclick="event.stopPropagation();Hist.del(${it.id})">🗑</button>
-          <h3>${it.title}</h3>
-          <p>${it.party} · ${it.date} · ${it.category || ''}<br>
-          ${(it.hooks || 0).toLocaleString()} hooks × ${(it.cards || 0).toLocaleString()} cards · K${it.k}</p>
-        </div>
-      </div>`).join('');
-  }
-
-  function init() {
-    seedDemoData();
-    // inject the animated logo everywhere it appears
-    $('logoTop').innerHTML = logoSVG(44, 't');
-    $('logoHero').innerHTML = logoSVG(100, 'h');
-    $('logoAuth').innerHTML = logoSVG(62, 'a');
-    $('logoLoader').innerHTML = logoSVG(96, 'l');
-    buildSlots(); renderNav(); setAuthRole('customer');
-    $('authForm').addEventListener('submit', authSubmit);
-    $('authToggle').addEventListener('click', () => setAuthMode(authMode === 'login' ? 'register' : 'login'));
-    $('btnGenerate').addEventListener('click', generate);
-    $('navBurger').addEventListener('click', e => {
-      e.stopPropagation(); $('mainNav').classList.toggle('open');
-    });
-    document.addEventListener('click', e => {
-      if (!e.target.closest('#mainNav') && !e.target.closest('#navBurger'))
-        $('mainNav').classList.remove('open');
-    });
-    // scroll-reveal animations — manual rect check works in every browser
-    // and embedded webview, unlike IntersectionObserver
-    const rvEls = [...document.querySelectorAll('.feature,.stat,.how-step,.sec-title,.sec-sub,.side-card')];
-    if (innerHeight > 0) rvEls.forEach(el => el.classList.add('rv'));
-    window.__reveal = () => rvEls.forEach(el => {
-      if (el.classList.contains('rv-in')) return;
-      const r = el.getBoundingClientRect();
-      if (r.top < innerHeight * .94 && r.bottom > 0) el.classList.add('rv-in');
-    });
-    addEventListener('scroll', window.__reveal, { passive: true });
-    addEventListener('resize', window.__reveal);
-    window.__reveal();
-    // probe: if the page cannot scroll (locked embeds/webviews), reveal all
-    if (document.documentElement.scrollHeight > innerHeight) {
-      scrollTo(0, 2);
-      if (!scrollY) rvEls.forEach(el => el.classList.add('rv-in'));
-      else scrollTo(0, 0);
-    }
-    Chat.init();
+  async function init(){
+    await IDB.open(); await seed();
+    $('logoTop').innerHTML=logoSVG(44,'t'); $('logoHero').innerHTML=logoSVG(100,'h'); $('logoAuth').innerHTML=logoSVG(62,'a'); $('logoLoader').innerHTML=logoSVG(96,'l');
+    renderNav(); setAuthRole('customer'); Admin.initUpload();
+    $('authForm').addEventListener('submit',authSubmit);
+    $('authToggle').addEventListener('click',()=>setAuthMode(authMode==='login'?'register':'login'));
+    $('navBurger').addEventListener('click',e=>{e.stopPropagation();$('mainNav').classList.toggle('open');});
+    document.addEventListener('click',e=>{ if(!e.target.closest('#mainNav')&&!e.target.closest('#navBurger'))$('mainNav').classList.remove('open'); });
+    // keep customer permission fresh when navigating
+    ['catalog','detail'].forEach(()=>{});
+    const origGo=window.go; // wrap not needed; refresh on visibility
+    document.addEventListener('visibilitychange',refreshPerm);
     go('home');
-    // dismiss the loading screen once the weave animation has played
-    setTimeout(() => $('pageLoader').classList.add('done'), 1500);
+    setTimeout(()=>$('pageLoader').classList.add('done'),1400);
   }
-  return { init, user, logout, googleDemo, generate, downloadPNG, downloadBMP,
-    printCard, renderHistory, getLast: () => last,
-    setAuthRole, gotoLogin };
+  return { init, user, logout, setAuthRole, gotoLogin, refreshPerm };
 })();
 App.init();
 </script>
