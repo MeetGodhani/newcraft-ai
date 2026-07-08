@@ -714,6 +714,9 @@ function go(screen){
   if(screen==='adminOrders')Orders.adminList();
   if(screen==='myOrders')Orders.myList();
   if(screen==='history')History.render();
+  window.currentScreen=screen;
+  if(!['detail','editor'].includes(screen)) window.currentDesignId=null;
+  if(typeof Chat!=='undefined') Chat.onScreen();
   window.scrollTo({top:0});
   window.__reveal?.();
 }
@@ -758,7 +761,7 @@ const Catalog=(()=>{
   function toggleFav(id){ const u=App.user(); if(!u)return; Fav.toggle(u.email,id); render(); }
   async function open(id){
     App.refreshPerm();
-    currentId=id; const d=Designs.all().find(x=>x.id===id); if(!d)return;
+    currentId=id; window.currentDesignId=id; const d=Designs.all().find(x=>x.id===id); if(!d)return;
     const u=App.user(); const can=u&&(u.canDownload||u.role==='admin');
     if(u)logMe('👁','Viewed '+d.name,id);
     $('dThumb').src=d.thumb; $('dCat').textContent=d.category; $('dName').textContent=d.name; $('dDesc').textContent=d.description;
@@ -809,9 +812,9 @@ const Orders=(()=>{
       🛒 Order status: <b>${mine.status.toUpperCase()}</b>${mine.status==='pending'?' — waiting for admin approval.':mine.status==='approved'?' — you can download below.':' — please contact the admin.'}</div>`;
     return `<button class="btn btn-gold" style="width:100%;padding:12px" onclick="Orders.request('${d.id}')">🛒 Request / Order this Design</button>`;
   }
-  function request(id){
+  function request(id,note){
     const u=App.user(); if(!u)return; const d=Designs.all().find(x=>x.id===id); if(!d)return;
-    const note=prompt('Add a note for the admin (quantity, colour, delivery…) — optional:','')||'';
+    note=note||'';
     const l=OrderStore.all();
     l.unshift({id:'o'+Date.now(),designId:id,designName:d.name,thumb:d.thumb,category:d.category,customerEmail:u.email,customerName:u.name,note,status:'pending',date:new Date().toLocaleString()});
     OrderStore.save(l); logMe('🛒','Ordered '+d.name,id);
@@ -985,8 +988,8 @@ const Editor=(()=>{
   const isOpen=()=>D!==null;
   function snapshot(){ undoStack.push({indices:new Uint8Array(D.indices),palette:D.palette.map(c=>[...c]),pct:[...D.pct],w:D.w,h:D.h}); if(undoStack.length>15)undoStack.shift(); }
   function undo(){ const s=undoStack.pop(); if(s){D.indices=s.indices;D.palette=s.palette;D.pct=s.pct;D.w=s.w;D.h=s.h;render();} }
-  async function open(id){ const d=Designs.all().find(x=>x.id===id); if(!d)return; D=await modelFromDesign(d); undoStack.length=0; $('edTitle').value=D.title; $('edCat').textContent=D.category; $('edK').value=Math.min(8,D.palette.length); render(); go('editor'); Chat.notifyOpen(); }
-  function openModel(model){ D=model; undoStack.length=0; $('edTitle').value=D.title; $('edCat').textContent=D.category; $('edK').value=Math.min(8,D.palette.length); render(); go('editor'); Chat.notifyOpen(); }
+  async function open(id){ const d=Designs.all().find(x=>x.id===id); if(!d)return; D=await modelFromDesign(d); undoStack.length=0; window.currentDesignId=id; $('edTitle').value=D.title; $('edCat').textContent=D.category; $('edK').value=Math.min(8,D.palette.length); render(); go('editor'); }
+  function openModel(model){ D=model; undoStack.length=0; window.currentDesignId=model.sourceId||null; $('edTitle').value=D.title; $('edCat').textContent=D.category; $('edK').value=Math.min(8,D.palette.length); render(); go('editor'); }
   function computePct(){ const counts=new Array(D.palette.length).fill(0); D.indices.forEach(i=>counts[i]++); D.pct=counts.map(c=>+(c*100/D.indices.length).toFixed(2)); }
   function paint(){ const cv=$('edCanvas'); const off=indicesToCanvas(D.indices,D.w,D.h,D.palette); cv.width=D.w;cv.height=D.h; cv.getContext('2d').drawImage(off,0,0); }
   function render(){ if(!D)return; paint(); $('edLayers').innerHTML=D.palette.map((rgb,i)=>`<div class="ed-layer"><input type="color" value="${rgbToHex(rgb)}" onchange="Editor.recolor(${i},this.value)"><span>${YARN[i]||('Shade '+(i+1))}</span><span class="ed-hex">${rgbToHex(rgb).toUpperCase()}</span><span class="ed-pct">${(D.pct[i]||0).toFixed(1)}%</span></div>`).join(''); $('edMetrics').textContent=`${D.w} × ${D.h} px · ${D.palette.length} colours · tap a swatch to change any shade`; }
@@ -1034,36 +1037,149 @@ const Chat=(()=>{
     {i:2,names:{en:'Second shade',hi:'दूसरा',gu:'બીજો'},words:['jari z','second','दूसरा','બીજો']},
     {i:3,names:{en:'MX',hi:'MX',gu:'MX'},words:['mx','mix','मिक्स','મિક્સ']},
   ];
-  const A={flip:['flip','mirror','उल्टा','उलटा','मिरर','ઊંધું','ઊંધી','ulta','undhu','palto'],bigger:['bigger','big','large','बड़ा','बड़ी','મોટું','મોટી','mota','moti','bada'],smaller:['smaller','small','छोटा','छोटी','નાનું','નાની','nana','nani','chota'],variation:['variation','again','another','new design','फिर','दुबारा','दूसरी','नई','ફરી','બીજી','નવી','fari','firse','navi'],help:['help','मदद','હેલ્પ','મદદ','madad'],hello:['hello','hey','namaste','नमस्ते','નમસ્તે','kem cho']};
-  const R={en:{hello:"Namaste! 🙏 I edit the open design. Try:\n• \"make ground red\"\n• \"zari gold karo\"\n• \"flip design\"\n• \"butti smaller\"\n• \"new variation\"",help:"I understand English, हिंदी and ગુજરાતી.\nRecolour any layer, flip/mirror, butti bigger/smaller, new variation.",color:(l,c)=>`Done ✔ ${l} recoloured to ${c}. Check the canvas!`,flip:"Done ✔ design mirrored.",bigger:"Done ✔ pattern scaled bigger.",smaller:"Done ✔ butti finer.",variation:"Done ✨ new colourway. Say it again for another!",noDesign:"Open a design first — Admin → Designs → ✏️ Edit.",fallback:"Try: \"ground blue karo\", \"flip design\", \"butti smaller\", \"new variation\" — or \"help\"."},
+  const _oldR={en:{hello:"Namaste! 🙏 I edit the open design. Try:\n• \"make ground red\"\n• \"zari gold karo\"\n• \"flip design\"\n• \"butti smaller\"\n• \"new variation\"",help:"I understand English, हिंदी and ગુજરાતી.\nRecolour any layer, flip/mirror, butti bigger/smaller, new variation.",color:(l,c)=>`Done ✔ ${l} recoloured to ${c}. Check the canvas!`,flip:"Done ✔ design mirrored.",bigger:"Done ✔ pattern scaled bigger.",smaller:"Done ✔ butti finer.",variation:"Done ✨ new colourway. Say it again for another!",noDesign:"Open a design first — Admin → Designs → ✏️ Edit.",fallback:"Try: \"ground blue karo\", \"flip design\", \"butti smaller\", \"new variation\" — or \"help\"."},
     hi:{hello:"नमस्ते! 🙏 मैं खुली डिज़ाइन एडिट करता हूँ। बोलिए:\n• \"ग्राउंड लाल करो\"\n• \"जरी गोल्ड करो\"\n• \"डिज़ाइन उल्टा करो\"\n• \"बूटी छोटी करो\"\n• \"नई वेरिएशन\"",help:"मैं English, हिंदी और ગુજરાતી समझता हूँ। किसी लेयर का रंग बदलें, उल्टा करें, बूटी बड़ी/छोटी, नई वेरिएशन।",color:(l,c)=>`हो गया ✔ ${l} का रंग ${c} कर दिया।`,flip:"हो गया ✔ डिज़ाइन मिरर कर दी।",bigger:"हो गया ✔ पैटर्न बड़ा कर दिया।",smaller:"हो गया ✔ बूटी छोटी कर दी।",variation:"हो गया ✨ नई कलर वेरिएशन।",noDesign:"पहले डिज़ाइन खोलें — Admin → Designs → ✏️ Edit।",fallback:"बोलिए: \"ग्राउंड नीला करो\", \"उल्टा करो\", \"बूटी छोटी करो\", \"नई वेरिएशन\"।"},
     gu:{hello:"નમસ્તે! 🙏 હું ખુલેલી ડિઝાઇન એડિટ કરું છું. બોલો:\n• \"ગ્રાઉન્ડ લાલ કરો\"\n• \"ઝરી ગોલ્ડ કરો\"\n• \"ડિઝાઇન ઊંધી કરો\"\n• \"બુટ્ટી નાની કરો\"\n• \"નવી વેરિએશન\"",help:"હું English, હિન્દી અને ગુજરાતી સમજું છું. કોઈ લેયરનો કલર બદલો, ઊંધી કરો, બુટ્ટી મોટી/નાની, નવી વેરિએશન.",color:(l,c)=>`થઈ ગયું ✔ ${l} નો કલર ${c} કર્યો.`,flip:"થઈ ગયું ✔ ડિઝાઇન મિરર કરી.",bigger:"થઈ ગયું ✔ પેટર્ન મોટી કરી.",smaller:"થઈ ગયું ✔ બુટ્ટી નાની કરી.",variation:"થઈ ગયું ✨ નવી કલરવે.",noDesign:"પહેલા ડિઝાઇન ખોલો — Admin → Designs → ✏️ Edit.",fallback:"બોલો: \"ગ્રાઉન્ડ વાદળી કરો\", \"ઊંધી કરો\", \"બુટ્ટી નાની કરો\", \"નવી વેરિએશન\"."}};
-  const CHIPS=["Ground red karo","जरी गोल्ड करो","ડિઝાઇન ઊંધી કરો","Butti smaller","New variation","Help"];
+  const CATS=[
+    {name:'Saree Palav',w:['palav','pallu','पल्लू','પાલવ','palu']},
+    {name:'Saree Border',w:['border','बॉर्डर','બોર્ડર','kinar','किनारी','કિનારી']},
+    {name:'Blouse',w:['blouse','ब्लाउज','બ્લાઉઝ']},
+    {name:'Lehenga',w:['lehenga','लहंगा','લહેંગા','kali','chaniya']},
+    {name:'Piece Cloth',w:['piece','पीस','પીસ','running']},
+    {name:'Butti',w:['butti','buti','बूटी','બુટ્ટી','allover','all over']},
+  ];
+  const K={
+    help:['help','मदद','madad','હેલ્પ','મદદ','what can you do','kya kar sakte','tame shu'],
+    hello:['hello','hey','namaste','नमस्ते','નમસ્તે','kem cho','kaise ho','hii'],
+    logout:['logout','log out','sign out','लॉग आउट','लॉगआउट','લૉગ આઉટ'],
+    home:['home','होम','હોમ','मुख्य पेज','main page'],
+    catalog:['catalog','browse','collection','all design','show design','designs dikha','designs dekh','कैटलॉग','डिज़ाइन दिखा','કૅટલૉગ','ડિઝાઇન બતાવ'],
+    myOrders:['my order','मेरे ऑर्डर','મારા ઓર્ડર','order status'],
+    history:['history','हिस्ट्री','ઇતિહાસ','activity'],
+    dashboard:['dashboard','डैशबोर्ड','ડેશબોર્ડ'],
+    builder:['ai builder','builder','generate design','डिज़ाइन बनाओ','नई डिज़ाइन','બનાવ','generate'],
+    upload:['upload','अपलोड','અપલોડ'],
+    customers:['customer','ग्राहक','ગ્રાહક'],
+    designsAdmin:['manage design','my designs','edit list'],
+    orderWord:['order','request','ऑर्डर','ઓર્ડર','मंगाओ','मंगवा','request karo','order karo'],
+    favWord:['save','favourite','favorite','wishlist','सेव','पसंद','પસંદ','ફેવરિટ','લાઇક','like it'],
+    zoom:['zoom','बड़ा दिखा','zoom in','ઝૂમ','fullscreen','close up'],
+    download:['download','डाउनलोड','ડાઉનલોડ','file do','files do'],
+    editThis:['edit this','edit design','edit karo','एडिट','डिज़ाइन एडिट',' એડિટ','open editor'],
+    flip:['flip','mirror','उल्टा','उलटा','मिरर','ઊંધું','ઊંધી','ulta','undhu','palto'],
+    bigger:['bigger','big','large','बड़ा','बड़ी','મોટું','મોટી','mota','moti','bada'],
+    smaller:['smaller','small','छोटा','छोटी','નાનું','નાની','nana','nani','chota'],
+    variation:['variation','again','another','new design','फिर','दुबारा','दूसरी','नई','ફરી','બીજી','નવી','fari','navi'],
+  };
   let lang='en';
   const detect=t=>/[઀-૿]/.test(t)?'gu':/[ऀ-ॿ]/.test(t)?'hi':'en';
   const has=(t,w)=>w.some(x=>t.includes(x));
-  function open(){ $('chatPanel').classList.remove('hidden'); $('chatText').focus(); }
+  const R={
+    en:{ help:a=>`I'm your assistant (English · हिंदी · ગુજરાતી). Try:\n${a?'• "ai builder", "go to orders"\n• "edit this design", "ground red"':'• "show borders", "open royal maroon"\n• "order this design", "save ❤", "zoom"'}\n• "catalog", "help"`,
+      welcome:(s,a)=>s==='editor'?'You\'re in the editor 🎛 Say "ground red", "flip", "butti smaller", "new variation".':s==='detail'?(a?'This design is open. Say "edit this design", or "flip", "ground gold".':'This design is open. Say "order this design", "save ❤", "zoom" or "download".'):'Namaste! 🙏 Where to? Try "catalog", "show borders", "open royal maroon" — or an edit like "ground red".',
+      nav:x=>`Opening ${x} →`, filtered:c=>`Showing ${c} designs 🔎`, opened:n=>`Opened "${n}" 👀`,
+      ordered:'Order placed 🛒 — the admin will review it.', saved:'Saved to favourites ❤', zoomed:'Zoomed in 🔍',
+      downloading:n=>`Downloading all files of "${n}" ⬇`, editing:'Opened in the editor 🎛 Now say "ground red", "flip"…',
+      needApprove:'Downloads locked 🔒 — order this design or ask the admin to approve you.',
+      editAdmin:'Editing is done by the design house. You can order or save this design instead.',
+      adminNoOrder:'You\'re admin — open the Orders screen to manage customer orders.',
+      noFocus:'Open a design first — go to the Catalog and tap one.', openDesignFirst:'Open a design to edit — Admin → Designs → ✏️ Edit.',
+      color:(l,c)=>`Done ✔ ${l} → ${c}.`, flip:'Done ✔ mirrored.', bigger:'Done ✔ pattern bigger.', smaller:'Done ✔ butti finer.', variation:'Done ✨ new colourway.',
+      bye:'Signed out 👋', fallback:'Didn\'t catch that. Try "catalog", "show borders", "order this", "ground red" — or "help".' },
+    hi:{ help:a=>`मैं आपका असिस्टेंट हूँ (English · हिंदी · ગુજરાતી)। बोलिए:\n${a?'• "ai builder", "ऑर्डर दिखाओ"\n• "यह डिज़ाइन एडिट करो", "ग्राउंड लाल"':'• "बॉर्डर दिखाओ", "रॉयल मैरून खोलो"\n• "यह डिज़ाइन ऑर्डर करो", "सेव करो", "ज़ूम"'}\n• "कैटलॉग", "मदद"`,
+      welcome:(s,a)=>s==='editor'?'आप एडिटर में हैं 🎛 बोलिए "ग्राउंड लाल", "उल्टा करो", "बूटी छोटी", "नई वेरिएशन"।':s==='detail'?(a?'यह डिज़ाइन खुली है। बोलिए "यह डिज़ाइन एडिट करो", या "उल्टा", "ग्राउंड गोल्ड"।':'यह डिज़ाइन खुली है। बोलिए "यह डिज़ाइन ऑर्डर करो", "सेव करो", "ज़ूम", "डाउनलोड"।'):'नमस्ते! 🙏 कहाँ चलें? "कैटलॉग", "बॉर्डर दिखाओ", "रॉयल मैरून खोलो" — या एडिट जैसे "ग्राउंड लाल"।',
+      nav:x=>`${x} खोल रहा हूँ →`, filtered:c=>`${c} डिज़ाइन दिखा रहा हूँ 🔎`, opened:n=>`"${n}" खोल दी 👀`,
+      ordered:'ऑर्डर हो गया 🛒 — एडमिन रिव्यू करेगा।', saved:'फेवरिट में सेव ❤', zoomed:'ज़ूम कर दिया 🔍',
+      downloading:n=>`"${n}" की सारी फाइलें डाउनलोड ⬇`, editing:'एडिटर में खोल दी 🎛 अब बोलिए "ग्राउंड लाल", "उल्टा"…',
+      needApprove:'डाउनलोड लॉक 🔒 — यह डिज़ाइन ऑर्डर करें या एडमिन से अप्रूवल लें।',
+      editAdmin:'एडिटिंग डिज़ाइन हाउस करता है। आप इसे ऑर्डर या सेव कर सकते हैं।',
+      adminNoOrder:'आप एडमिन हैं — ऑर्डर स्क्रीन खोलकर मैनेज करें।',
+      noFocus:'पहले कोई डिज़ाइन खोलें — कैटलॉग में जाकर टैप करें।', openDesignFirst:'एडिट के लिए डिज़ाइन खोलें — Admin → Designs → ✏️ Edit।',
+      color:(l,c)=>`हो गया ✔ ${l} → ${c}।`, flip:'हो गया ✔ मिरर।', bigger:'हो गया ✔ पैटर्न बड़ा।', smaller:'हो गया ✔ बूटी छोटी।', variation:'हो गया ✨ नई कलरवे।',
+      bye:'लॉग आउट 👋', fallback:'समझ नहीं आया। बोलिए "कैटलॉग", "बॉर्डर दिखाओ", "यह ऑर्डर करो", "ग्राउंड लाल" — या "मदद"।' },
+    gu:{ help:a=>`હું તમારો આસિસ્ટન્ટ છું (English · हिंदी · ગુજરાતી). બોલો:\n${a?'• "ai builder", "ઓર્ડર બતાવ"\n• "આ ડિઝાઇન એડિટ કરો", "ગ્રાઉન્ડ લાલ"':'• "બોર્ડર બતાવ", "રોયલ મરૂન ખોલો"\n• "આ ડિઝાઇન ઓર્ડર કરો", "સેવ કરો", "ઝૂમ"'}\n• "કૅટલૉગ", "હેલ્પ"`,
+      welcome:(s,a)=>s==='editor'?'તમે એડિટરમાં છો 🎛 બોલો "ગ્રાઉન્ડ લાલ", "ઊંધી કરો", "બુટ્ટી નાની", "નવી વેરિએશન".':s==='detail'?(a?'આ ડિઝાઇન ખુલી છે. બોલો "આ ડિઝાઇન એડિટ કરો", અથવા "ઊંધી", "ગ્રાઉન્ડ ગોલ્ડ".':'આ ડિઝાઇન ખુલી છે. બોલો "આ ડિઝાઇન ઓર્ડર કરો", "સેવ કરો", "ઝૂમ", "ડાઉનલોડ".'):'નમસ્તે! 🙏 ક્યાં જવું? "કૅટલૉગ", "બોર્ડર બતાવ", "રોયલ મરૂન ખોલો" — અથવા એડિટ જેમ કે "ગ્રાઉન્ડ લાલ".',
+      nav:x=>`${x} ખોલું છું →`, filtered:c=>`${c} ડિઝાઇન બતાવું છું 🔎`, opened:n=>`"${n}" ખોલી 👀`,
+      ordered:'ઓર્ડર થઈ ગયો 🛒 — એડમિન રિવ્યૂ કરશે.', saved:'ફેવરિટમાં સેવ ❤', zoomed:'ઝૂમ કર્યું 🔍',
+      downloading:n=>`"${n}" ની બધી ફાઇલ ડાઉનલોડ ⬇`, editing:'એડિટરમાં ખોલી 🎛 હવે બોલો "ગ્રાઉન્ડ લાલ", "ઊંધી"…',
+      needApprove:'ડાઉનલોડ લૉક 🔒 — આ ડિઝાઇન ઓર્ડર કરો અથવા એડમિન પાસે અપ્રૂવલ લો.',
+      editAdmin:'એડિટિંગ ડિઝાઇન હાઉસ કરે છે. તમે એને ઓર્ડર કે સેવ કરી શકો.',
+      adminNoOrder:'તમે એડમિન છો — ઓર્ડર સ્ક્રીન ખોલીને મેનેજ કરો.',
+      noFocus:'પહેલા કોઈ ડિઝાઇન ખોલો — કૅટલૉગમાં જઈને ટૅપ કરો.', openDesignFirst:'એડિટ માટે ડિઝાઇન ખોલો — Admin → Designs → ✏️ Edit.',
+      color:(l,c)=>`થઈ ગયું ✔ ${l} → ${c}.`, flip:'થઈ ગયું ✔ મિરર.', bigger:'થઈ ગયું ✔ પેટર્ન મોટી.', smaller:'થઈ ગયું ✔ બુટ્ટી નાની.', variation:'થઈ ગયું ✨ નવી કલરવે.',
+      bye:'લૉગ આઉટ 👋', fallback:'સમજાયું નહીં. બોલો "કૅટલૉગ", "બોર્ડર બતાવ", "આ ઓર્ડર કરો", "ગ્રાઉન્ડ લાલ" — અથવા "હેલ્પ".' }
+  };
+  const CHIPSETS={
+    editor:['Ground red karo','जरी गोल्ड करो','Butti smaller','New variation'],
+    detailAdmin:['Edit this design','Flip','Ground gold','Zoom'],
+    detailCust:['Order this design','Save ❤','Zoom','Download'],
+    catalog:['Show borders','Show lehenga','My orders','Help'],
+    admin:['AI Builder','Go to Orders','Upload design','Help'],
+    home:['Browse catalog','Show sarees','Help'],
+  };
+  function chipsFor(scr,admin){
+    if(scr==='editor')return CHIPSETS.editor;
+    if(scr==='detail')return admin?CHIPSETS.detailAdmin:CHIPSETS.detailCust;
+    if(scr==='catalog')return CHIPSETS.catalog;
+    if(admin&&['admin','adminDesigns','adminOrders','adminUpload','adminBuilder','adminCustomers'].includes(scr))return CHIPSETS.admin;
+    return CHIPSETS.home;
+  }
+  function renderChips(){ const u=App.user(); const set=chipsFor(window.currentScreen||'home',!!(u&&u.role==='admin')); $('chatChips').innerHTML=set.map(c=>`<div class="cchip" onclick="Chat.send(this.textContent)">${c}</div>`).join(''); }
+  function open(){ $('chatPanel').classList.remove('hidden'); renderChips(); notifyOpen(); $('chatText').focus(); }
   function close(){ $('chatPanel').classList.add('hidden'); }
-  function toggle(){ $('chatPanel').classList.toggle('hidden'); }
+  function toggle(){ const p=$('chatPanel'); if(p.classList.contains('hidden'))open(); else close(); }
   function addMsg(t,who){ const d=document.createElement('div'); d.className='msg '+who; d.textContent=t; $('chatMsgs').appendChild(d); $('chatMsgs').scrollTop=1e9; }
   const bot=t=>addMsg(t,'bot');
-  function notifyOpen(){ if(!$('chatPanel').classList.contains('hidden')) bot(R[lang].hello); }
-  function process(raw){ const t=raw.toLowerCase(); lang=detect(raw); const S=R[lang];
-    if(has(t,A.help))return bot(S.help);
-    const need=has(t,A.flip)||has(t,A.bigger)||has(t,A.smaller)||has(t,A.variation)||COLOR_DEFS.some(c=>has(t,c.words));
-    if(need&&!Editor.isOpen())return bot(S.noDesign);
-    if(has(t,A.flip)){Editor.flipH();go('editor');return bot(S.flip);}
-    if(has(t,A.smaller)){Editor.scalePattern(0.75);go('editor');return bot(S.smaller);}
-    if(has(t,A.bigger)){Editor.scalePattern(1.35);go('editor');return bot(S.bigger);}
-    if(has(t,A.variation)){Editor.variation();go('editor');return bot(S.variation);}
-    const color=COLOR_DEFS.find(c=>has(t,c.words));
-    if(color){ const layer=LAYER_DEFS.find(l=>has(t,l.words))||LAYER_DEFS[1]; const D=Editor.get(); const li=Math.min(layer.i,D.palette.length-1); Editor.recolorRGB(li,[...color.rgb]); go('editor'); return bot(S.color(layer.names[lang],color.names[lang])); }
-    if(has(t,A.hello))return bot(S.hello);
+  function notifyOpen(){ const u=App.user(); bot(R[lang].welcome(window.currentScreen||'home',!!(u&&u.role==='admin'))); }
+  function onScreen(){ if(!$('chatPanel').classList.contains('hidden'))renderChips(); }
+  async function process(raw){
+    const t=raw.toLowerCase(); lang=detect(raw); const S=R[lang];
+    const u=App.user(); const admin=!!(u&&u.role==='admin');
+    const scr=window.currentScreen||'home'; const fid=window.currentDesignId;
+    const D=()=>Designs.all().find(x=>x.id===fid);
+    if(has(t,K.help)) return bot(S.help(admin));
+    if(has(t,K.logout)){ App.logout(); return bot(S.bye); }
+    // category filter first (so "border" isn't read as "order")
+    const cat0=CATS.find(c=>has(t,c.w));
+    if(cat0){ go('catalog'); Catalog.setFilter(cat0.name); return bot(S.filtered(cat0.name)); }
+    // design-focused actions
+    if(has(t,K.editThis)){ if(!admin)return bot(S.editAdmin); if(!fid)return bot(S.noFocus); await Editor.open(fid); return bot(S.editing); }
+    if(has(t,K.zoom)&&fid){ const d=D(); if(d)openZoom(d.thumb); return bot(S.zoomed); }
+    if(!admin&&has(t,K.myOrders)){ go('myOrders'); return bot(S.nav('My Orders')); }
+    if(has(t,K.orderWord)){ if(scr==='detail'&&fid&&!admin){ Orders.request(fid); return bot(S.ordered); } if(scr==='detail'&&admin)return bot(S.adminNoOrder); go(admin?'adminOrders':'myOrders'); return bot(S.nav('Orders')); }
+    if(has(t,K.favWord)){ if(scr==='detail'&&fid){ Catalog.toggleFav(fid); Catalog.open(fid); return bot(S.saved); } if(!admin){ go('catalog'); Catalog.setFilter('❤ Saved'); return bot(S.nav('Saved')); } }
+    if(has(t,K.download)&&fid){ if(!(u&&(u.canDownload||admin)))return bot(S.needApprove); Catalog.dlAll(fid); return bot(S.downloading(D()?.name||'')); }
+    // navigation
+    if(has(t,K.home)){ go('home'); return bot(S.nav('Home')); }
+    if(admin&&has(t,K.dashboard)){ go('admin'); return bot(S.nav('Dashboard')); }
+    if(admin&&has(t,K.builder)){ go('adminBuilder'); return bot(S.nav('AI Builder')); }
+    if(admin&&has(t,K.upload)){ go('adminUpload'); return bot(S.nav('Upload')); }
+    if(admin&&has(t,K.customers)){ go('adminCustomers'); return bot(S.nav('Customers')); }
+    if(admin&&has(t,K.designsAdmin)){ go('adminDesigns'); return bot(S.nav('Designs')); }
+    if(has(t,K.history)){ go('history'); return bot(S.nav('History')); }
+    if(!admin&&has(t,K.myOrders)){ go('myOrders'); return bot(S.nav('My Orders')); }
+    if(has(t,K.catalog)){ go('catalog'); return bot(S.nav('Catalog')); }
+    // open a design by name
+    const named=Designs.all().filter(d=>d.published).find(d=>t.includes(d.name.toLowerCase())||d.name.toLowerCase().split(' ').some(w=>w.length>3&&t.includes(w)));
+    if(named){ Catalog.open(named.id); return bot(S.opened(named.name)); }
+    // edit commands
+    const isEdit=has(t,K.flip)||has(t,K.bigger)||has(t,K.smaller)||has(t,K.variation)||COLOR_DEFS.some(c=>has(t,c.words));
+    if(isEdit){
+      if(!admin)return bot(S.editAdmin);
+      if(!Editor.isOpen()){ if(fid)await Editor.open(fid); else return bot(S.openDesignFirst); }
+      if(has(t,K.flip)){Editor.flipH();return bot(S.flip);}
+      if(has(t,K.smaller)){Editor.scalePattern(0.75);return bot(S.smaller);}
+      if(has(t,K.bigger)){Editor.scalePattern(1.35);return bot(S.bigger);}
+      if(has(t,K.variation)){Editor.variation();return bot(S.variation);}
+      const color=COLOR_DEFS.find(c=>has(t,c.words));
+      if(color){ const layer=LAYER_DEFS.find(l=>has(t,l.words))||LAYER_DEFS[1]; const Dm=Editor.get(); const li=Math.min(layer.i,Dm.palette.length-1); Editor.recolorRGB(li,[...color.rgb]); return bot(S.color(layer.names[lang],color.names[lang])); }
+    }
+    if(has(t,K.hello)) return bot(S.welcome(scr,admin));
     bot(S.fallback);
   }
   function send(text){ const v=(text??$('chatText').value).trim(); if(!v)return; addMsg(v,'me'); $('chatText').value=''; process(v); }
-  function init(){ $('chatFab').addEventListener('click',toggle); $('chatSend').addEventListener('click',()=>send()); $('chatText').addEventListener('keydown',e=>{if(e.key==='Enter')send();}); $('chatChips').innerHTML=CHIPS.map(c=>`<div class="cchip" onclick="Chat.send('${c}')">${c}</div>`).join(''); addMsg(R.en.hello,'bot'); }
-  return { init, open, close, send, notifyOpen };
+  function init(){ $('chatFab').addEventListener('click',toggle); $('chatSend').addEventListener('click',()=>send()); $('chatText').addEventListener('keydown',e=>{if(e.key==='Enter')send();}); renderChips(); }
+  return { init, open, close, send, notifyOpen, onScreen };
 })();
 
 /* ===== app / auth ===== */
@@ -1079,7 +1195,7 @@ const App=(()=>{
     $('mainNav').innerHTML=items.map(([s,l])=>`<a data-nav="${s}" onclick="go('${s}')">${l}</a>`).join('');
     $('navAuth').innerHTML=u?`<div class="glass user-chip"><span class="uc-av">${(u.name||'?')[0].toUpperCase()}</span><span class="uc-name">${u.name}${u.role==='admin'?'<span class="admin-badge">ADMIN</span>':''}</span><button class="uc-out" onclick="App.logout()" title="Sign out"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button></div>`
       :`<a class="btn btn-gold" style="padding:10px 22px;font-size:.84rem" onclick="go('auth')">Sign In</a>`;
-    const fab=$('chatFab'); if(fab){ fab.classList.toggle('hidden',!(u&&u.role==='admin')); if(!(u&&u.role==='admin'))$('chatPanel').classList.add('hidden'); }
+    const fab=$('chatFab'); if(fab){ fab.classList.toggle('hidden',!u); if(!u)$('chatPanel').classList.add('hidden'); }
   }
   function setAuthRole(role){
     authRole=role; const admin=role==='admin';
