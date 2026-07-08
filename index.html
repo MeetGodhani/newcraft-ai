@@ -210,6 +210,25 @@ select option{background:#1c1730}
 .chat-input{display:flex;gap:8px;padding:11px 12px;border-top:1px solid var(--stroke);background:rgba(255,255,255,.04)}
 .chat-input input{flex:1}
 .chat-input button{flex:0 0 44px;border:none;border-radius:12px;cursor:pointer;font-size:1rem;color:#1a1a2e;background:linear-gradient(135deg,var(--gold-soft),var(--gold))}
+/* search + sort */
+.cat-toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.cat-toolbar input{flex:1;min-width:170px}
+.cat-toolbar select{flex:0 0 auto;width:auto;min-width:150px}
+/* favourite heart on cards */
+.fav-btn{position:absolute;top:8px;right:8px;z-index:3;width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;background:rgba(0,0,0,.5);color:#fff;font-size:1rem;display:grid;place-items:center;transition:.2s}
+.fav-btn.on{color:#ff5a7a;background:rgba(0,0,0,.62)}
+.fav-btn:hover{transform:scale(1.1)}
+/* lightbox */
+.lightbox{position:fixed;inset:0;z-index:80;background:rgba(8,8,16,.93);display:none;place-items:center;padding:20px;cursor:zoom-out}
+.lightbox.on{display:grid}
+.lightbox img{max-width:100%;max-height:92vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.lb-close{position:absolute;top:14px;right:18px;font-size:1.7rem;color:#fff;background:none;border:none;cursor:pointer}
+.zoomable{cursor:zoom-in}
+/* orders / status */
+.status{padding:3px 11px;border-radius:99px;font-size:.7rem;font-weight:600}
+.status.pending{background:rgba(212,160,23,.16);color:var(--gold-soft)}
+.status.approved{background:rgba(87,201,139,.16);color:var(--ok)}
+.status.rejected{background:rgba(255,122,122,.16);color:var(--fail)}
 #pageLoader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:radial-gradient(900px 600px at 80% -10%,#3b1d3f,transparent 60%),linear-gradient(160deg,#101322,#1a1430 55%,#241028);transition:opacity .6s ease,visibility .6s}
 #pageLoader.done{opacity:0;visibility:hidden}
 .pl-inner{text-align:center}
@@ -315,9 +334,13 @@ document.getElementById('nc-gate-pass').focus();})();
 <section class="screen" id="screen-catalog">
   <div class="glass card">
     <div class="section-heading"><div><h2>Design Catalog</h2><p style="color:var(--ink-dim);font-size:.85rem;margin-top:5px" id="catalogPerm"></p></div></div>
+    <div class="cat-toolbar">
+      <input id="catSearch" type="text" placeholder="🔍 Search by name, section or code…" oninput="Catalog.render()">
+      <select id="catSort" onchange="Catalog.render()"><option value="new">Newest first</option><option value="name">Name A–Z</option><option value="files">Most files</option></select>
+    </div>
     <div class="filter-chips" id="catFilters"></div>
     <div class="cat-grid" id="catGrid"></div>
-    <div class="empty hidden" id="catEmpty">No designs published yet. Please check back soon.</div>
+    <div class="empty hidden" id="catEmpty">No designs match your search. Try another word or section.</div>
   </div>
 </section>
 
@@ -326,11 +349,12 @@ document.getElementById('nc-gate-pass').focus();})();
   <div class="glass card">
     <a class="fchip" style="display:inline-block;margin-bottom:18px" onclick="go('catalog')">← Back to catalog</a>
     <div class="detail-grid">
-      <div class="detail-thumb"><img id="dThumb" alt=""></div>
+      <div class="detail-thumb"><img id="dThumb" class="zoomable" alt="" onclick="openZoom(this.src)"></div>
       <div>
         <span class="cat-cat" id="dCat"></span>
         <h2 style="font-size:1.5rem;margin:10px 0 6px" id="dName"></h2>
-        <p style="color:var(--ink-dim);font-size:.88rem;line-height:1.6;margin-bottom:18px" id="dDesc"></p>
+        <p style="color:var(--ink-dim);font-size:.88rem;line-height:1.6;margin-bottom:14px" id="dDesc"></p>
+        <div id="dActions" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px"></div>
         <h3 class="detail-h3">Colourway</h3>
         <div class="colourway" id="dColourway"></div>
         <h3 class="detail-h3">Design Details</h3>
@@ -338,6 +362,7 @@ document.getElementById('nc-gate-pass').focus();})();
         <h3 class="detail-h3">Colour Shades &amp; Codes</h3>
         <div id="dShades"></div>
         <div style="margin-top:18px" id="dPerm"></div>
+        <div id="dOrder" style="margin-top:14px"></div>
         <h3 class="detail-h3">Production Files</h3>
         <div id="dFiles"></div>
       </div>
@@ -422,6 +447,24 @@ document.getElementById('nc-gate-pass').focus();})();
   </div>
 </section>
 
+<!-- CUSTOMER ORDERS -->
+<section class="screen" id="screen-myOrders">
+  <div class="glass card">
+    <div class="section-heading"><div><h2>My Orders</h2><p style="color:var(--ink-dim);font-size:.85rem;margin-top:5px">Your design requests and their status.</p></div></div>
+    <div id="myOrdersList"></div>
+    <div class="empty hidden" id="myOrdersEmpty">No orders yet — open a design and tap “Request / Order”.</div>
+  </div>
+</section>
+
+<!-- ADMIN ORDERS -->
+<section class="screen" id="screen-adminOrders">
+  <div class="glass card">
+    <div class="section-heading"><h2>Design Orders <span class="admin-badge">ADMIN</span></h2></div>
+    <div id="adOrdersList"></div>
+    <div class="empty hidden" id="adOrdersEmpty">No orders yet.</div>
+  </div>
+</section>
+
 <!-- HISTORY (both roles) -->
 <section class="screen" id="screen-history">
   <div class="glass card">
@@ -487,6 +530,9 @@ document.getElementById('nc-gate-pass').focus();})();
   <div class="chat-input"><input id="chatText" type="text" placeholder="Type in EN / हिंदी / ગુજરાતી…"><button id="chatSend">➤</button></div>
 </div>
 
+<!-- IMAGE ZOOM LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeZoom()"><button class="lb-close" onclick="closeZoom()">✕</button><img id="lightboxImg" alt=""></div>
+
 <footer>NewCraft AI · Jacquard Design Catalog · demo build</footer>
 <script>
 const $ = id => document.getElementById(id);
@@ -509,6 +555,10 @@ const IDB = {
 /* ===== stores ===== */
 const Designs = { all:()=>JSON.parse(localStorage.getItem('nc_designs')||'[]'), save:l=>localStorage.setItem('nc_designs',JSON.stringify(l)) };
 const Users = { all:()=>JSON.parse(localStorage.getItem('nc_users')||'[]'), save:l=>localStorage.setItem('nc_users',JSON.stringify(l)) };
+const OrderStore = { all:()=>JSON.parse(localStorage.getItem('nc_orders')||'[]'), save:l=>localStorage.setItem('nc_orders',JSON.stringify(l)) };
+const Fav = { all:e=>JSON.parse(localStorage.getItem('nc_fav_'+e)||'[]'),
+  toggle(email,id){ let l=Fav.all(email); l=l.includes(id)?l.filter(x=>x!==id):[...l,id]; localStorage.setItem('nc_fav_'+email,JSON.stringify(l)); return l.includes(id); },
+  has(email,id){ return email?Fav.all(email).includes(id):false; } };
 const fmtSize = b => b<1024?b+' B':b<1048576?(b/1024).toFixed(0)+' KB':(b/1048576).toFixed(1)+' MB';
 const fileIcon = n => { const e=(n.split('.').pop()||'').toLowerCase();
   return e==='pdf'?'📄':['png','jpg','jpeg','webp','bmp','gif'].includes(e)?'🖼️':['rar','zip','7z'].includes(e)?'🗜️':'📎'; };
@@ -581,11 +631,12 @@ async function seed(){
     designs.push({id:'d'+i,name,category:cat,description:'Production-grade '+cat.toLowerCase()+' design with full file package.',thumb,files,hooks,cards,k:4,specs:{palette:pal4,k:4,hooks,cards},date:'2026-06-'+(12+i),published:true});
   }
   Designs.save(designs);
+  OrderStore.save([{id:'o1',designId:'d0',designName:designs[0].name,thumb:designs[0].thumb,category:designs[0].category,customerEmail:'anil@sarees.in',customerName:'Anil Sarees',note:'Need in bottle green, ~50 meters',status:'pending',date:'2026-07-05 10:20'}]);
   localStorage.setItem('nc_catalog_seeded_v1','1');
 }
 
 /* ===== router ===== */
-const CUST=['catalog','detail'], ADM=['admin','adminUpload','adminDesigns','adminCustomers','adminBuilder','editor'];
+const CUST=['catalog','detail','myOrders'], ADM=['admin','adminUpload','adminDesigns','adminCustomers','adminBuilder','editor','adminOrders'];
 function go(screen){
   const u=App.user();
   if(ADM.includes(screen)&&u?.role!=='admin')screen='auth';
@@ -600,6 +651,8 @@ function go(screen){
   if(screen==='adminDesigns')Admin.designs();
   if(screen==='adminCustomers')Admin.customers();
   if(screen==='adminBuilder')Builder.render();
+  if(screen==='adminOrders')Orders.adminList();
+  if(screen==='myOrders')Orders.myList();
   if(screen==='history')History.render();
   window.scrollTo({top:0});
 }
@@ -611,6 +664,10 @@ async function downloadFile(f){
   setTimeout(()=>URL.revokeObjectURL(a.href),4000);
 }
 
+/* ===== image zoom lightbox ===== */
+function openZoom(src){ if(!src)return; $('lightboxImg').src=src; $('lightbox').classList.add('on'); }
+function closeZoom(){ $('lightbox').classList.remove('on'); }
+
 /* ===== catalog (customer) ===== */
 const Catalog=(()=>{
   let filter='All', currentId=null;
@@ -618,24 +675,38 @@ const Catalog=(()=>{
     const u=App.user();
     $('catalogPerm').innerHTML = u&&u.canDownload
       ? '✅ Your account is approved — you can download files.'
-      : '🔒 View only — ask the admin to approve your account for downloads.';
-    $('catFilters').innerHTML=CATEGORIES.map(c=>`<div class="fchip ${c===filter?'active':''}" onclick="Catalog.setFilter('${c}')">${c}</div>`).join('');
-    const list=Designs.all().filter(d=>d.published&&(filter==='All'||d.category===filter));
+      : '🔒 View only — request a design or ask the admin to approve your account.';
+    const FILT=[...CATEGORIES,'❤ Saved'];
+    $('catFilters').innerHTML=FILT.map(c=>`<div class="fchip ${c===filter?'active':''}" onclick="Catalog.setFilter('${c}')">${c}</div>`).join('');
+    const q=($('catSearch')?.value||'').trim().toLowerCase();
+    const sort=$('catSort')?.value||'new';
+    const email=u?.email;
+    let list=Designs.all().filter(d=>d.published);
+    if(filter==='❤ Saved') list=list.filter(d=>Fav.has(email,d.id));
+    else if(filter!=='All') list=list.filter(d=>d.category===filter);
+    if(q) list=list.filter(d=>(d.name+' '+d.category+' '+designCode(d.id)).toLowerCase().includes(q));
+    if(sort==='name') list=[...list].sort((a,b)=>a.name.localeCompare(b.name));
+    else if(sort==='files') list=[...list].sort((a,b)=>b.files.length-a.files.length);
     $('catEmpty').classList.toggle('hidden',list.length>0);
-    $('catGrid').innerHTML=list.map(d=>`<div class="glass cat-card" onclick="Catalog.open('${d.id}')">
-      <img class="thumb" src="${d.thumb}" alt=""><div class="cat-body"><h3>${d.name}</h3><span class="cat-cat">${d.category}</span>
+    $('catGrid').innerHTML=list.map(d=>`<div class="glass cat-card">
+      <button class="fav-btn ${Fav.has(email,d.id)?'on':''}" onclick="event.stopPropagation();Catalog.toggleFav('${d.id}')" title="Save">${Fav.has(email,d.id)?'❤':'🤍'}</button>
+      <img class="thumb" src="${d.thumb}" alt="" onclick="Catalog.open('${d.id}')"><div class="cat-body" onclick="Catalog.open('${d.id}')"><h3>${d.name}</h3><span class="cat-cat">${d.category}</span>
       <div class="cat-files">📦 ${d.files.length} file${d.files.length!==1?'s':''} · ${d.files.map(f=>f.name.split('.').pop().toUpperCase()).join(', ')}</div></div></div>`).join('');
   }
   function setFilter(c){filter=c;render();}
+  function toggleFav(id){ const u=App.user(); if(!u)return; Fav.toggle(u.email,id); render(); }
   async function open(id){
     App.refreshPerm();
     currentId=id; const d=Designs.all().find(x=>x.id===id); if(!d)return;
     const u=App.user(); const can=u&&(u.canDownload||u.role==='admin');
     if(u)logMe('👁','Viewed '+d.name,id);
     $('dThumb').src=d.thumb; $('dCat').textContent=d.category; $('dName').textContent=d.name; $('dDesc').textContent=d.description;
+    const faved=Fav.has(u?.email,id);
+    $('dActions').innerHTML=`<button class="btn btn-ghost" style="padding:10px 18px;font-size:.82rem" onclick="Catalog.toggleFav('${id}');Catalog.open('${id}')">${faved?'❤ Saved':'🤍 Save'}</button><button class="btn btn-ghost" style="padding:10px 18px;font-size:.82rem" onclick="openZoom('${d.thumb}')">🔍 Zoom</button>`;
+    $('dOrder').innerHTML=Orders.detailUI(d,u);
     $('dPerm').innerHTML = can
       ? '<div class="perm-note perm-yes">✅ You are approved — download any file below.</div>'
-      : '<div class="perm-note perm-no">🔒 Downloads locked. Ask the admin to approve your account, then refresh.</div>';
+      : '<div class="perm-note perm-no">🔒 Downloads locked. Request this design or ask the admin to approve your account.</div>';
     $('dFiles').innerHTML=d.files.map((f,i)=>`<div class="file-row"><span class="file-ic">${fileIcon(f.name)}</span>
       <div class="file-meta"><b>${f.name}</b><span>${(f.name.split('.').pop()||'').toUpperCase()} · ${fmtSize(f.size)}</span></div>
       <button class="dl-btn" ${can?'':'disabled'} onclick="Catalog.dl('${id}',${i})">${can?'⬇ Download':'🔒 Locked'}</button></div>`).join('')
@@ -665,7 +736,57 @@ const Catalog=(()=>{
   }
   async function dl(id,i){ const d=Designs.all().find(x=>x.id===id); await downloadFile(d.files[i]); logMe('⬇','Downloaded '+d.files[i].name+' — '+d.name,id); }
   async function dlAll(id){ const d=Designs.all().find(x=>x.id===id); for(const f of d.files){ await downloadFile(f); await new Promise(r=>setTimeout(r,400)); } logMe('📦','Downloaded all files — '+d.name,id); }
-  return { render, setFilter, open, dl, dlAll };
+  return { render, setFilter, open, dl, dlAll, toggleFav };
+})();
+
+/* ===== orders / enquiries ===== */
+const Orders=(()=>{
+  function detailUI(d,u){
+    if(!u||u.role==='admin') return '';
+    const mine=OrderStore.all().find(o=>o.designId===d.id&&o.customerEmail===u.email);
+    if(mine) return `<div class="perm-note ${mine.status==='approved'?'perm-yes':mine.status==='rejected'?'perm-no':''}" style="${mine.status==='pending'?'background:rgba(212,160,23,.1);border:1px solid rgba(212,160,23,.3);color:var(--gold-soft)':''}">
+      🛒 Order status: <b>${mine.status.toUpperCase()}</b>${mine.status==='pending'?' — waiting for admin approval.':mine.status==='approved'?' — you can download below.':' — please contact the admin.'}</div>`;
+    return `<button class="btn btn-gold" style="width:100%;padding:12px" onclick="Orders.request('${d.id}')">🛒 Request / Order this Design</button>`;
+  }
+  function request(id){
+    const u=App.user(); if(!u)return; const d=Designs.all().find(x=>x.id===id); if(!d)return;
+    const note=prompt('Add a note for the admin (quantity, colour, delivery…) — optional:','')||'';
+    const l=OrderStore.all();
+    l.unshift({id:'o'+Date.now(),designId:id,designName:d.name,thumb:d.thumb,category:d.category,customerEmail:u.email,customerName:u.name,note,status:'pending',date:new Date().toLocaleString()});
+    OrderStore.save(l); logMe('🛒','Ordered '+d.name,id);
+    Catalog.open(id);
+  }
+  function myList(){
+    const u=App.user(); if(!u)return;
+    const list=OrderStore.all().filter(o=>o.customerEmail===u.email);
+    $('myOrdersEmpty').classList.toggle('hidden',list.length>0);
+    $('myOrdersList').innerHTML=list.map(o=>`<div class="adm-card">
+      <img class="adm-thumb" src="${o.thumb}" alt="">
+      <div class="adm-info"><b>${o.designName}</b><span class="adm-sub">${o.category} · ${o.date}</span>
+        ${o.note?`<span class="adm-sub">📝 ${o.note}</span>`:''}
+        <div style="margin:9px 0"><span class="status ${o.status}">${o.status.toUpperCase()}</span></div>
+        <div class="adm-actions"><button class="tbtn" onclick="Catalog.open('${o.designId}')">View design →</button></div>
+      </div></div>`).join('');
+  }
+  function adminList(){
+    const list=OrderStore.all();
+    $('adOrdersEmpty').classList.toggle('hidden',list.length>0);
+    $('adOrdersList').innerHTML=list.map(o=>`<div class="adm-card">
+      <img class="adm-thumb" src="${o.thumb}" alt="">
+      <div class="adm-info"><b>${o.designName}</b><span class="adm-sub">👤 ${o.customerName} (${o.customerEmail}) · ${o.date}</span>
+        ${o.note?`<span class="adm-sub">📝 ${o.note}</span>`:''}
+        <div style="margin:9px 0"><span class="status ${o.status}">${o.status.toUpperCase()}</span></div>
+        <div class="adm-actions">${o.status==='pending'?`<button class="tbtn" onclick="Orders.setStatus('${o.id}','approved')">✅ Approve</button><button class="tbtn danger" onclick="Orders.setStatus('${o.id}','rejected')">✕ Reject</button>`:`<button class="tbtn" onclick="Orders.setStatus('${o.id}','pending')">↺ Reset</button>`}<button class="tbtn" onclick="Editor.open('${o.designId}')">✏️ Edit design</button></div>
+      </div></div>`).join('');
+  }
+  function setStatus(oid,status){
+    const l=OrderStore.all(); const o=l.find(x=>x.id===oid); if(!o)return; o.status=status; OrderStore.save(l);
+    if(status==='approved'){ const us=Users.all(); const cu=us.find(x=>x.email===o.customerEmail); if(cu){cu.canDownload=true; Users.save(us);} }
+    logMe('🔑',status==='approved'?('Approved order: '+o.designName+' for '+o.customerEmail):('Order '+status+': '+o.designName));
+    adminList();
+  }
+  const pendingCount=()=>OrderStore.all().filter(o=>o.status==='pending').length;
+  return { detailUI, request, myList, adminList, setStatus, pendingCount };
 })();
 
 /* ===== admin ===== */
@@ -677,7 +798,7 @@ const Admin=(()=>{
     const d=Designs.all(), cu=customers();
     const totalFiles=d.reduce((s,x)=>s+x.files.length,0);
     const approved=cu.filter(u=>u.canDownload).length;
-    $('kpiRow').innerHTML=[['🎨',d.length,'DESIGNS'],['📦',totalFiles,'TOTAL FILES'],['👥',cu.length,'CUSTOMERS'],['✅',approved,'DOWNLOAD-APPROVED']]
+    $('kpiRow').innerHTML=[['🎨',d.length,'DESIGNS'],['📦',totalFiles,'TOTAL FILES'],['👥',cu.length,'CUSTOMERS'],['🛒',Orders.pendingCount(),'PENDING ORDERS']]
       .map(([ic,n,t])=>`<div class="glass kpi"><div class="kpi-ic">${ic}</div><div class="kpi-n">${n}</div><div class="kpi-t">${t}</div></div>`).join('');
   }
   function initUpload(){
@@ -886,7 +1007,7 @@ const App=(()=>{
   const user=()=>JSON.parse(localStorage.getItem('nc_session')||'null');
   function session(u){ localStorage.setItem('nc_session',JSON.stringify(u)); renderNav(); go(u.role==='admin'?'admin':'catalog'); }
   function logout(){ localStorage.removeItem('nc_session'); renderNav(); go('home'); }
-  const CUST_NAV=[['home','Home'],['catalog','Catalog'],['history','History']], ADMIN_NAV=[['home','Home'],['admin','Dashboard'],['adminBuilder','AI Builder'],['adminUpload','Upload'],['adminDesigns','Designs'],['adminCustomers','Customers'],['history','History']], PUB=[['home','Home']];
+  const CUST_NAV=[['home','Home'],['catalog','Catalog'],['myOrders','My Orders'],['history','History']], ADMIN_NAV=[['home','Home'],['admin','Dashboard'],['adminBuilder','AI Builder'],['adminUpload','Upload'],['adminDesigns','Designs'],['adminOrders','Orders'],['adminCustomers','Customers'],['history','History']], PUB=[['home','Home']];
   function renderNav(){
     const u=user(); const items=!u?PUB:(u.role==='admin'?ADMIN_NAV:CUST_NAV);
     $('mainNav').innerHTML=items.map(([s,l])=>`<a data-nav="${s}" onclick="go('${s}')">${l}</a>`).join('');
