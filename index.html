@@ -171,6 +171,7 @@ footer{text-align:center;padding:26px;color:var(--ink-dim);font-size:.74rem}
   .cat-grid{grid-template-columns:1fr 1fr}
   .kpi-row{grid-template-columns:1fr 1fr}
   .detail-grid,.form-grid{grid-template-columns:1fr}
+  .slots{grid-template-columns:repeat(3,1fr)}
 }
 @media (max-width:480px){.brand-sub{display:none}.cat-grid{grid-template-columns:1fr 1fr;gap:10px}}
 </style>
@@ -312,6 +313,44 @@ document.getElementById('nc-gate-pass').focus();})();
     <div class="table-wrap"><table class="dtable" id="adCustomers"></table></div>
   </div>
 </section>
+
+<!-- ADMIN AI BUILDER -->
+<section class="screen" id="screen-adminBuilder">
+  <div class="glass card">
+    <div class="section-heading"><h2>AI Design Builder <span class="admin-badge">ADMIN</span></h2></div>
+    <p style="color:var(--ink-dim);font-size:.85rem;margin-bottom:16px">Blend up to 5 reference images into a production design, then download it in multiple formats (PNG, JPG, BMP, PDF, ZIP) or publish it to the catalog.</p>
+    <div class="slots" id="bSlots"></div>
+    <div class="form-grid" style="margin-top:18px">
+      <label>Design Name<input id="bName" type="text" placeholder="AI Floral Palav"></label>
+      <label>Section<select id="bCat"><option>Saree Palav</option><option>Saree Border</option><option>Blouse</option><option>Lehenga</option><option>Piece Cloth</option><option>Butti</option></select></label>
+      <label>Colours (K)<select id="bK"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+      <label>Total Hooks<input id="bHooks" type="number" value="896" min="64" max="1600"></label>
+    </div>
+    <button class="btn btn-gold btn-wide" id="bGen" onclick="Builder.generate()">✦ Generate Design</button>
+    <div class="form-error" id="bErr"></div>
+  </div>
+  <div class="glass card hidden" id="bResult">
+    <div class="section-heading"><h2>Generated Design</h2></div>
+    <div class="detail-grid">
+      <div class="detail-thumb"><canvas id="bCanvas" style="width:100%;display:block"></canvas></div>
+      <div>
+        <div class="cat-files" id="bMetrics" style="margin-bottom:14px"></div>
+        <h3 style="font-size:.95rem;margin-bottom:12px">Download (multiple formats)</h3>
+        <div id="bDownloads"></div>
+        <button class="btn btn-gold" style="margin-top:14px;padding:11px 20px;font-size:.85rem" onclick="Builder.publish()">⬆ Publish to Catalog</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HISTORY (both roles) -->
+<section class="screen" id="screen-history">
+  <div class="glass card">
+    <div class="section-heading"><div><h2 id="histTitle">History</h2><p style="color:var(--ink-dim);font-size:.85rem;margin-top:5px">Your recent activity — jump back to any past work.</p></div></div>
+    <div id="histList"></div>
+    <div class="empty hidden" id="histEmpty">No activity yet.</div>
+  </div>
+</section>
 </main>
 
 <footer>NewCraft AI · Jacquard Design Catalog · demo build</footer>
@@ -397,11 +436,12 @@ async function seed(){
 }
 
 /* ===== router ===== */
-const CUST=['catalog','detail'], ADM=['admin','adminUpload','adminDesigns','adminCustomers'];
+const CUST=['catalog','detail'], ADM=['admin','adminUpload','adminDesigns','adminCustomers','adminBuilder'];
 function go(screen){
   const u=App.user();
   if(ADM.includes(screen)&&u?.role!=='admin')screen='auth';
   if(CUST.includes(screen)&&!u)screen='auth';
+  if(screen==='history'&&!u)screen='auth';
   $('mainNav').classList.remove('open');
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   $('screen-'+screen).classList.add('on');
@@ -410,6 +450,8 @@ function go(screen){
   if(screen==='admin')Admin.dashboard();
   if(screen==='adminDesigns')Admin.designs();
   if(screen==='adminCustomers')Admin.customers();
+  if(screen==='adminBuilder')Builder.render();
+  if(screen==='history')History.render();
   window.scrollTo({top:0});
 }
 
@@ -439,7 +481,8 @@ const Catalog=(()=>{
   function open(id){
     App.refreshPerm();
     currentId=id; const d=Designs.all().find(x=>x.id===id); if(!d)return;
-    const u=App.user(); const can=u&&u.canDownload;
+    const u=App.user(); const can=u&&(u.canDownload||u.role==='admin');
+    if(u)logMe('👁','Viewed '+d.name,id);
     $('dThumb').src=d.thumb; $('dCat').textContent=d.category; $('dName').textContent=d.name; $('dDesc').textContent=d.description;
     $('dPerm').innerHTML = can
       ? '<div class="perm-note perm-yes">✅ You are approved — download any file below.</div>'
@@ -450,8 +493,8 @@ const Catalog=(()=>{
       + (can?`<button class="btn btn-ghost dl-all" onclick="Catalog.dlAll('${id}')" style="padding:10px 20px;font-size:.82rem;margin-top:6px">⬇ Download all files</button>`:'');
     go('detail');
   }
-  async function dl(id,i){ const d=Designs.all().find(x=>x.id===id); await downloadFile(d.files[i]); }
-  async function dlAll(id){ const d=Designs.all().find(x=>x.id===id); for(const f of d.files){ await downloadFile(f); await new Promise(r=>setTimeout(r,400)); } }
+  async function dl(id,i){ const d=Designs.all().find(x=>x.id===id); await downloadFile(d.files[i]); logMe('⬇','Downloaded '+d.files[i].name+' — '+d.name,id); }
+  async function dlAll(id){ const d=Designs.all().find(x=>x.id===id); for(const f of d.files){ await downloadFile(f); await new Promise(r=>setTimeout(r,400)); } logMe('📦','Downloaded all files — '+d.name,id); }
   return { render, setFilter, open, dl, dlAll };
 })();
 
@@ -486,9 +529,9 @@ const Admin=(()=>{
     if(!pendingFiles.length){err.textContent='Add at least one production file.';return;}
     const files=[];
     for(const f of pendingFiles){ const id=rid(); await IDB.put(id,f); files.push({id,name:f.name,type:f.type||'application/octet-stream',size:f.size}); }
-    const list=Designs.all();
-    list.unshift({id:'d'+Date.now(),name,category:$('uCat').value,description:$('uDesc').value.trim()||('Production '+$('uCat').value.toLowerCase()+' design.'),thumb:pendingThumb,files,date:new Date().toLocaleDateString(),published:true});
-    Designs.save(list);
+    const list=Designs.all(); const did='d'+Date.now();
+    list.unshift({id:did,name,category:$('uCat').value,description:$('uDesc').value.trim()||('Production '+$('uCat').value.toLowerCase()+' design.'),thumb:pendingThumb,files,date:new Date().toLocaleDateString(),published:true});
+    Designs.save(list); logMe('⬆','Uploaded '+name,did);
     $('uName').value='';$('uDesc').value='';$('uThumbLabel').textContent='Click to choose a preview image (PNG/JPG)';
     pendingThumb=null;pendingFiles=[];renderChips();
     go('adminDesigns');
@@ -505,7 +548,7 @@ const Admin=(()=>{
   }
   async function dl(did,fid){ const d=Designs.all().find(x=>x.id===did); await downloadFile(d.files.find(f=>f.id===fid)); }
   function togglePub(id){ const l=Designs.all(); const d=l.find(x=>x.id===id); d.published=!d.published; Designs.save(l); designs(); }
-  async function del(id){ const l=Designs.all(); const d=l.find(x=>x.id===id); if(d){ for(const f of d.files) await IDB.del(f.id); } Designs.save(l.filter(x=>x.id!==id)); designs(); }
+  async function del(id){ const l=Designs.all(); const d=l.find(x=>x.id===id); if(d){ for(const f of d.files) await IDB.del(f.id); logMe('🗑','Deleted '+d.name); } Designs.save(l.filter(x=>x.id!==id)); designs(); }
   function customersScreen(){
     const cu=customers();
     $('adCustomers').innerHTML=`<thead><tr><th>Customer</th><th>Email</th><th>Joined</th><th>Download Access</th><th>Action</th></tr></thead><tbody>${cu.map(u=>`
@@ -514,8 +557,60 @@ const Admin=(()=>{
       <td><button class="tbtn" onclick="Admin.toggleDl('${u.email}')">${u.canDownload?'Revoke':'Approve'}</button></td></tr>`).join('')
       || '<tr><td colspan="5" style="color:var(--ink-dim)">No customers yet.</td></tr>'}</tbody>`;
   }
-  function toggleDl(email){ const l=Users.all(); const u=l.find(x=>x.email===email); if(u)u.canDownload=!u.canDownload; Users.save(l); customersScreen(); }
+  function toggleDl(email){ const l=Users.all(); const u=l.find(x=>x.email===email); if(u){u.canDownload=!u.canDownload; logMe('🔑',(u.canDownload?'Approved':'Revoked')+' downloads for '+email);} Users.save(l); customersScreen(); }
   return { dashboard, initUpload, upload, rmChip, designs, dl, togglePub, del, customers:customersScreen, toggleDl };
+})();
+
+/* ===== AI pipeline (admin builder) ===== */
+function quantize(imageData,k){ const px=imageData.data,n=px.length/4; const S=Math.min(n,20000),step=Math.max(1,Math.floor(n/S)); const sample=[]; for(let i=0;i<n;i+=step)sample.push([px[i*4],px[i*4+1],px[i*4+2]]); let centers=[]; for(let i=0;i<k;i++)centers.push([...sample[Math.floor(i*sample.length/k)]]); for(let it=0;it<12;it++){ const sum=centers.map(()=>[0,0,0,0]); for(const p of sample){ let bi=0,bd=1e12; for(let c=0;c<k;c++){const d=(p[0]-centers[c][0])**2+(p[1]-centers[c][1])**2+(p[2]-centers[c][2])**2; if(d<bd){bd=d;bi=c;}} sum[bi][0]+=p[0];sum[bi][1]+=p[1];sum[bi][2]+=p[2];sum[bi][3]++; } centers=sum.map((s,c)=>s[3]?[s[0]/s[3],s[1]/s[3],s[2]/s[3]]:centers[c]); } const indices=new Uint8Array(n),counts=new Array(k).fill(0); for(let i=0;i<n;i++){let bi=0,bd=1e12;for(let c=0;c<k;c++){const d=(px[i*4]-centers[c][0])**2+(px[i*4+1]-centers[c][1])**2+(px[i*4+2]-centers[c][2])**2;if(d<bd){bd=d;bi=c;}}indices[i]=bi;counts[bi]++;} const order=counts.map((c,i)=>[c,i]).sort((a,b)=>b[0]-a[0]).map(x=>x[1]); const remap=new Uint8Array(k); order.forEach((o,ni)=>remap[o]=ni); for(let i=0;i<n;i++)indices[i]=remap[indices[i]]; return {indices,palette:order.map(o=>centers[o].map(Math.round)),pct:order.map(o=>+(counts[o]*100/n).toFixed(2))}; }
+const loadImg=f=>new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(f);});
+async function blendRefs(files,size){ const c=document.createElement('canvas');c.width=c.height=size;const g=c.getContext('2d'); const imgs=await Promise.all(files.map(loadImg)); g.drawImage(imgs[0],0,0,size,size); imgs.slice(1).forEach((im,i)=>{g.globalAlpha=0.5/(i+1);g.drawImage(im,0,0,size,size);}); g.globalAlpha=1; g.filter='saturate(1.35) contrast(1.2)'; g.drawImage(c,0,0); g.filter='none'; g.save();g.translate(size,0);g.scale(-1,1);g.drawImage(c,0,0,size/2,size,0,0,size/2,size);g.restore(); return c; }
+function indicesToCanvas(indices,w,h,palette){ const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');const d=g.createImageData(w,h); for(let i=0;i<indices.length;i++){const p=palette[indices[i]]||[0,0,0];d.data[i*4]=p[0];d.data[i*4+1]=p[1];d.data[i*4+2]=p[2];d.data[i*4+3]=255;} g.putImageData(d,0,0); return c; }
+function writeBMP(indices,w,h,palette){ const rowSize=Math.ceil(w/4)*4,imgSize=rowSize*h,off=54+1024; const buf=new ArrayBuffer(off+imgSize),dv=new DataView(buf),by=new Uint8Array(buf); dv.setUint8(0,66);dv.setUint8(1,77);dv.setUint32(2,off+imgSize,true);dv.setUint32(10,off,true);dv.setUint32(14,40,true);dv.setInt32(18,w,true);dv.setInt32(22,h,true);dv.setUint16(26,1,true);dv.setUint16(28,8,true);dv.setUint32(34,imgSize,true);dv.setInt32(38,2835,true);dv.setInt32(42,2835,true);dv.setUint32(46,256,true); palette.forEach((rgb,i)=>{const o=54+i*4;dv.setUint8(o,rgb[2]);dv.setUint8(o+1,rgb[1]);dv.setUint8(o+2,rgb[0]);}); for(let y=0;y<h;y++){const src=(h-1-y)*w,dst=off+y*rowSize;for(let x=0;x<w;x++)by[dst+x]=indices[src+x];} return new Blob([buf],{type:'image/bmp'}); }
+function buildCardPDF(name,category,w,h,palette,pct){ const lines=['NewCraft AI - Jacquard Design Card','Design: '+name,'Section: '+category,'Total Hooks: '+w+'   Total Cards: '+h,'Colours (K): '+palette.length,'Yarn AVG %: '+pct.map(p=>p.toFixed(1)).join(', ')]; let content='',y=200; content+='BT /F1 16 Tf 30 '+y+' Td ('+lines[0]+') Tj ET\n'; y-=26; for(let i=1;i<lines.length;i++){ content+='BT /F1 11 Tf 30 '+y+' Td ('+lines[i].replace(/[()\\]/g,' ')+') Tj ET\n'; y-=18; } const clen=new TextEncoder().encode(content).length; const pdf='%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 420 240]/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>endobj\n4 0 obj<</Length '+clen+'>>stream\n'+content+'endstream endobj\n5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF'; return new Blob([pdf],{type:'application/pdf'}); }
+const CRC32_T=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC32_T[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function makeZip(entries){ const enc=new TextEncoder(),chunks=[],central=[]; let offset=0; for(const e of entries){ const nb=enc.encode(e.name),data=e.data,crc=crc32(data); const lh=new DataView(new ArrayBuffer(30)); lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint32(14,crc,true);lh.setUint32(18,data.length,true);lh.setUint32(22,data.length,true);lh.setUint16(26,nb.length,true); chunks.push(new Uint8Array(lh.buffer),nb,data); const ch=new DataView(new ArrayBuffer(46)); ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint32(16,crc,true);ch.setUint32(20,data.length,true);ch.setUint32(24,data.length,true);ch.setUint16(28,nb.length,true);ch.setUint32(42,offset,true); central.push({header:new Uint8Array(ch.buffer),name:nb}); offset+=30+nb.length+data.length; } const cStart=offset; let cSize=0; for(const c of central){chunks.push(c.header,c.name);cSize+=c.header.length+c.name.length;} const eo=new DataView(new ArrayBuffer(22)); eo.setUint32(0,0x06054b50,true);eo.setUint16(8,entries.length,true);eo.setUint16(10,entries.length,true);eo.setUint32(12,cSize,true);eo.setUint32(16,cStart,true); chunks.push(new Uint8Array(eo.buffer)); return new Blob(chunks,{type:'application/zip'}); }
+const blobU8=async b=>new Uint8Array(await b.arrayBuffer());
+
+/* ===== activity / history store ===== */
+const Activity={ all:e=>JSON.parse(localStorage.getItem('nc_act_'+e)||'[]'),
+  add(email,icon,text,designId){ if(!email)return; const l=Activity.all(email); l.unshift({icon,text,designId:designId||null,ts:new Date().toLocaleString()}); localStorage.setItem('nc_act_'+email,JSON.stringify(l.slice(0,60))); } };
+function logMe(icon,text,designId){ const u=App.user(); if(u)Activity.add(u.email,icon,text,designId); }
+
+const History=(()=>{
+  function render(){ const u=App.user(); if(!u)return; $('histTitle').textContent=(u.role==='admin'?'Admin History':'My History');
+    const acts=Activity.all(u.email); $('histEmpty').classList.toggle('hidden',acts.length>0);
+    $('histList').innerHTML=acts.map(a=>{ const design=a.designId&&Designs.all().find(d=>d.id===a.designId);
+      return `<div class="file-row"><span class="file-ic">${a.icon}</span><div class="file-meta"><b>${a.text}</b><span>${a.ts}</span></div>${design?`<button class="dl-btn" onclick="History.open('${a.designId}')">Open →</button>`:''}</div>`; }).join(''); }
+  function open(id){ Catalog.open(id); }
+  return { render, open };
+})();
+
+/* ===== AI builder (admin) ===== */
+const Builder=(()=>{
+  const SLOTS=['Structure','Motif','Texture','Colour','Mood']; const files=[null,null,null,null,null]; let last=null;
+  function init(){ const wrap=$('bSlots'); wrap.innerHTML=''; SLOTS.forEach((role,i)=>{ const s=document.createElement('div'); s.className='slot'; s.innerHTML=`<input type="file" accept="image/*" hidden><button class="remove">✕</button><span class="plus">+</span><span class="role role-mid">${role}</span><span class="role-tag">${role}</span>`; const inp=s.querySelector('input'); s.addEventListener('click',e=>{if(!e.target.closest('.remove'))inp.click();}); inp.addEventListener('change',()=>{const f=inp.files[0];if(!f)return;files[i]=f;let img=s.querySelector('img');if(!img){img=document.createElement('img');s.prepend(img);}img.src=URL.createObjectURL(f);s.classList.add('filled');}); s.querySelector('.remove').addEventListener('click',()=>{files[i]=null;inp.value='';s.querySelector('img')?.remove();s.classList.remove('filled');}); wrap.appendChild(s); }); }
+  function render(){}
+  async function generate(){ const list=files.filter(Boolean); const err=$('bErr'); err.textContent=''; if(!list.length){err.textContent='Add at least 1 reference image.';return;}
+    const name=$('bName').value.trim()||'AI Design'; const cat=$('bCat').value; const k=+$('bK').value; const hooks=Math.min(Math.max(+$('bHooks').value||896,64),1600); const cards=Math.round(hooks*0.82);
+    const btn=$('bGen'); btn.disabled=true; btn.textContent='Generating…';
+    try{ const tile=await blendRefs(list,1024); const hc=document.createElement('canvas');hc.width=hooks;hc.height=cards;const hg=hc.getContext('2d');hg.imageSmoothingEnabled=false;hg.drawImage(tile,0,0,hooks,cards);
+      const q=quantize(hg.getImageData(0,0,hooks,cards),k); const rc=indicesToCanvas(q.indices,hooks,cards,q.palette);
+      const oc=$('bCanvas'); oc.width=hooks; oc.height=cards; oc.getContext('2d').drawImage(rc,0,0);
+      const base=name.replace(/\s+/g,'_');
+      const png=await new Promise(r=>rc.toBlob(r,'image/png')); const jpg=await new Promise(r=>rc.toBlob(r,'image/jpeg',0.9));
+      const bmp=writeBMP(q.indices,hooks,cards,q.palette); const pdf=buildCardPDF(name,cat,hooks,cards,q.palette,q.pct);
+      const zip=makeZip([{name:base+'.png',data:await blobU8(png)},{name:base+'.bmp',data:await blobU8(bmp)},{name:base+'_card.pdf',data:await blobU8(pdf)}]);
+      const t=document.createElement('canvas');t.width=300;t.height=Math.round(300*cards/hooks);t.getContext('2d').drawImage(rc,0,0,t.width,t.height);const thumb=t.toDataURL('image/jpeg',0.7);
+      last={name,category:cat,thumb,files:[{name:base+'.png',type:'image/png',blob:png},{name:base+'.jpg',type:'image/jpeg',blob:jpg},{name:base+'.bmp',type:'image/bmp',blob:bmp},{name:base+'_card.pdf',type:'application/pdf',blob:pdf},{name:base+'_package.zip',type:'application/zip',blob:zip}]};
+      $('bMetrics').textContent='🧵 '+hooks.toLocaleString()+' hooks × '+cards.toLocaleString()+' cards · K'+k+' · '+last.files.length+' files ready';
+      $('bDownloads').innerHTML=last.files.map((f,i)=>`<div class="file-row"><span class="file-ic">${fileIcon(f.name)}</span><div class="file-meta"><b>${f.name}</b><span>${(f.name.split('.').pop()||'').toUpperCase()} · ${fmtSize(f.blob.size)}</span></div><button class="dl-btn" onclick="Builder.dl(${i})">⬇ Download</button></div>`).join('');
+      $('bResult').classList.remove('hidden'); $('bResult').scrollIntoView({behavior:'smooth'}); logMe('🎨','Generated (AI) '+name);
+    }catch(e){ err.textContent='Generation failed: '+e.message; } finally{ btn.disabled=false; btn.textContent='✦ Generate Design'; } }
+  function dl(i){ const f=last.files[i]; const a=document.createElement('a'); a.href=URL.createObjectURL(f.blob); a.download=f.name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); }
+  async function publish(){ if(!last)return; const files2=[]; for(const f of last.files){ const id=rid(); await IDB.put(id,f.blob); files2.push({id,name:f.name,type:f.type,size:f.blob.size}); } const l=Designs.all(); const did='d'+Date.now(); l.unshift({id:did,name:last.name,category:last.category,description:'AI-generated '+last.category.toLowerCase()+' design.',thumb:last.thumb,files:files2,date:new Date().toLocaleDateString(),published:true}); Designs.save(l); logMe('✨','Published AI design '+last.name,did); $('bResult').classList.add('hidden'); go('adminDesigns'); }
+  return { init, render, generate, dl, publish };
 })();
 
 /* ===== app / auth ===== */
@@ -525,7 +620,7 @@ const App=(()=>{
   const user=()=>JSON.parse(localStorage.getItem('nc_session')||'null');
   function session(u){ localStorage.setItem('nc_session',JSON.stringify(u)); renderNav(); go(u.role==='admin'?'admin':'catalog'); }
   function logout(){ localStorage.removeItem('nc_session'); renderNav(); go('home'); }
-  const CUST_NAV=[['home','Home'],['catalog','Catalog']], ADMIN_NAV=[['admin','Dashboard'],['adminUpload','Upload'],['adminDesigns','Designs'],['adminCustomers','Customers']], PUB=[['home','Home']];
+  const CUST_NAV=[['home','Home'],['catalog','Catalog'],['history','History']], ADMIN_NAV=[['admin','Dashboard'],['adminBuilder','AI Builder'],['adminUpload','Upload'],['adminDesigns','Designs'],['adminCustomers','Customers'],['history','History']], PUB=[['home','Home']];
   function renderNav(){
     const u=user(); const items=!u?PUB:(u.role==='admin'?ADMIN_NAV:CUST_NAV);
     $('mainNav').innerHTML=items.map(([s,l])=>`<a data-nav="${s}" onclick="go('${s}')">${l}</a>`).join('');
@@ -570,7 +665,7 @@ const App=(()=>{
   async function init(){
     await IDB.open(); await seed();
     $('logoTop').innerHTML=logoSVG(44,'t'); $('logoHero').innerHTML=logoSVG(100,'h'); $('logoAuth').innerHTML=logoSVG(62,'a'); $('logoLoader').innerHTML=logoSVG(96,'l');
-    renderNav(); setAuthRole('customer'); Admin.initUpload();
+    renderNav(); setAuthRole('customer'); Admin.initUpload(); Builder.init();
     $('authForm').addEventListener('submit',authSubmit);
     $('authToggle').addEventListener('click',()=>setAuthMode(authMode==='login'?'register':'login'));
     $('navBurger').addEventListener('click',e=>{e.stopPropagation();$('mainNav').classList.toggle('open');});
