@@ -175,6 +175,41 @@ select option{background:#1c1730}
 .adm-sub{font-size:.75rem;color:var(--ink-dim);display:block;margin-top:4px}
 .adm-chips{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}
 .adm-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+/* editor */
+.ed-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.ed-top input{max-width:240px}
+.ed-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:22px}
+.ed-canvas-wrap{border-radius:16px;border:1px solid var(--stroke);overflow:auto;background:rgba(0,0,0,.25);max-height:520px;display:grid;place-items:center;padding:6px}
+.ed-canvas-wrap canvas{max-width:100%;height:auto;image-rendering:pixelated;border-radius:8px}
+.ed-panel h3{font-size:.82rem;margin:16px 0 10px;color:var(--gold-soft);letter-spacing:.4px}
+.ed-panel h3:first-child{margin-top:0}
+.ed-layer{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:.84rem}
+.ed-layer input[type=color]{width:42px;height:30px;padding:2px;border-radius:8px;cursor:pointer;flex:0 0 auto}
+.ed-layer .ed-hex{color:var(--ink-dim);font-size:.72rem}
+.ed-layer .ed-pct{margin-left:auto;font-weight:600;font-size:.8rem;color:var(--ink-dim)}
+.tool-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tool-btn{padding:11px 8px;border-radius:10px;border:1px solid var(--stroke);cursor:pointer;background:rgba(255,255,255,.06);color:var(--ink);font-size:.74rem;font-weight:600;transition:.2s}
+.tool-btn:hover{background:rgba(212,160,23,.16);border-color:var(--gold)}
+.ed-row{display:flex;gap:8px;align-items:center;margin-top:8px}.ed-row select{flex:1}
+/* colourway strip */
+.colourway{display:flex;border-radius:11px;overflow:hidden;margin:2px 0 18px;height:46px;border:1px solid var(--stroke)}
+.colourway span{flex:1;position:relative}
+.colourway span::after{content:attr(data-hex);position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:.52rem;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);letter-spacing:.2px}
+/* chat */
+.chat-fab{position:fixed;right:18px;bottom:18px;z-index:60;width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;font-size:1.4rem;color:#1a1a2e;background:linear-gradient(135deg,var(--gold-soft),var(--gold));box-shadow:0 12px 30px rgba(212,160,23,.5)}
+.chat-panel{position:fixed;right:18px;bottom:84px;z-index:60;width:min(380px,calc(100vw - 24px));height:min(540px,calc(100vh - 120px));display:flex;flex-direction:column;overflow:hidden}
+.chat-head{padding:14px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--stroke);background:rgba(255,255,255,.05)}
+.chat-head h3{font-size:.9rem}.chat-head small{display:block;color:var(--ink-dim);font-size:.65rem}
+.chat-head button{margin-left:auto;border:none;background:none;color:var(--ink-dim);cursor:pointer;font-size:1rem}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:9px}
+.msg{max-width:85%;padding:9px 13px;border-radius:14px;font-size:.83rem;line-height:1.5;white-space:pre-wrap}
+.msg.bot{align-self:flex-start;background:rgba(255,255,255,.08);border:1px solid var(--stroke);border-bottom-left-radius:4px}
+.msg.me{align-self:flex-end;color:#1a1a2e;font-weight:500;background:linear-gradient(135deg,var(--gold-soft),var(--gold));border-bottom-right-radius:4px}
+.chat-chips{display:flex;gap:6px;padding:0 12px 8px;flex-wrap:wrap}
+.cchip{padding:6px 11px;border-radius:999px;font-size:.7rem;cursor:pointer;color:var(--gold-soft);background:rgba(212,160,23,.1);border:1px solid rgba(212,160,23,.35)}
+.chat-input{display:flex;gap:8px;padding:11px 12px;border-top:1px solid var(--stroke);background:rgba(255,255,255,.04)}
+.chat-input input{flex:1}
+.chat-input button{flex:0 0 44px;border:none;border-radius:12px;cursor:pointer;font-size:1rem;color:#1a1a2e;background:linear-gradient(135deg,var(--gold-soft),var(--gold))}
 #pageLoader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:radial-gradient(900px 600px at 80% -10%,#3b1d3f,transparent 60%),linear-gradient(160deg,#101322,#1a1430 55%,#241028);transition:opacity .6s ease,visibility .6s}
 #pageLoader.done{opacity:0;visibility:hidden}
 .pl-inner{text-align:center}
@@ -204,6 +239,8 @@ footer{text-align:center;padding:26px;color:var(--ink-dim);font-size:.74rem}
   .uc-name{display:none}
   .user-chip{padding:5px 6px}
   .brand-name{font-size:1rem}
+  .ed-grid{grid-template-columns:1fr}
+  .ed-top input{max-width:none}
 }
 @media (max-width:480px){.brand-sub{display:none}.cat-grid{grid-template-columns:1fr 1fr;gap:10px}}
 </style>
@@ -294,6 +331,8 @@ document.getElementById('nc-gate-pass').focus();})();
         <span class="cat-cat" id="dCat"></span>
         <h2 style="font-size:1.5rem;margin:10px 0 6px" id="dName"></h2>
         <p style="color:var(--ink-dim);font-size:.88rem;line-height:1.6;margin-bottom:18px" id="dDesc"></p>
+        <h3 class="detail-h3">Colourway</h3>
+        <div class="colourway" id="dColourway"></div>
         <h3 class="detail-h3">Design Details</h3>
         <div class="spec-grid" id="dSpecs"></div>
         <h3 class="detail-h3">Colour Shades &amp; Codes</h3>
@@ -391,7 +430,62 @@ document.getElementById('nc-gate-pass').focus();})();
     <div class="empty hidden" id="histEmpty">No activity yet.</div>
   </div>
 </section>
+
+<!-- DEEP EDITOR (admin) -->
+<section class="screen" id="screen-editor">
+  <div class="glass card">
+    <a class="fchip" style="display:inline-block;margin-bottom:16px" onclick="go('adminDesigns')">← Back to designs</a>
+    <div class="ed-top">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0"><input id="edTitle" type="text" placeholder="Design title"><span class="cat-cat" id="edCat"></span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="tbtn" onclick="Editor.undo()">↶ Undo</button>
+        <button class="tbtn" onclick="Editor.saveCopy()">⧉ Save as Copy</button>
+        <button class="btn btn-gold" style="padding:9px 16px;font-size:.82rem" onclick="Editor.save()">💾 Save Changes</button>
+      </div>
+    </div>
+    <div class="ed-grid">
+      <div>
+        <div class="ed-canvas-wrap"><canvas id="edCanvas"></canvas></div>
+        <div class="cat-files" id="edMetrics" style="margin-top:12px"></div>
+      </div>
+      <div class="ed-panel">
+        <h3>COLOUR SHADES — TAP A SWATCH TO RECOLOUR</h3>
+        <div id="edLayers"></div>
+        <h3>TRANSFORMS</h3>
+        <div class="tool-grid">
+          <button class="tool-btn" onclick="Editor.flipH()">⇋ Flip H</button>
+          <button class="tool-btn" onclick="Editor.flipV()">⇵ Flip V</button>
+          <button class="tool-btn" onclick="Editor.rotate180()">⟳ Rotate</button>
+          <button class="tool-btn" onclick="Editor.mirrorPanel()">🪞 Mirror</button>
+          <button class="tool-btn" onclick="Editor.scalePattern(0.75)">🔍− Butti Smaller</button>
+          <button class="tool-btn" onclick="Editor.scalePattern(1.35)">🔍+ Butti Bigger</button>
+          <button class="tool-btn" onclick="Editor.variation()">✨ New Variation</button>
+          <button class="tool-btn" onclick="Chat.open()">💬 Ask AI</button>
+          <button class="tool-btn" onclick="Editor.downloadPNG()">⬇ PNG</button>
+        </div>
+        <h3>COLOUR COUNT (RE-QUANTIZE)</h3>
+        <div class="ed-row">
+          <select id="edK"><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
+          <button class="tool-btn" onclick="Editor.requantize()">Apply K</button>
+        </div>
+        <h3>DOWNLOAD PRODUCTION FILES</h3>
+        <div class="adm-actions"><button class="tbtn" onclick="Editor.downloadPNG()">🖼 PNG</button><button class="tbtn" onclick="Editor.downloadBMP()">🧵 BMP</button></div>
+      </div>
+    </div>
+  </div>
+</section>
 </main>
+
+<!-- AI CHAT (trilingual) -->
+<button class="chat-fab hidden" id="chatFab" title="AI Assistant">💬</button>
+<div class="glass chat-panel hidden" id="chatPanel">
+  <div class="chat-head"><span style="width:9px;height:9px;border-radius:50%;background:var(--ok);flex:0 0 auto"></span>
+    <div><h3>NewCraft AI Assistant</h3><small>English · हिंदी · ગુજરાતી</small></div>
+    <button onclick="Chat.close()">✕</button></div>
+  <div class="chat-msgs" id="chatMsgs"></div>
+  <div class="chat-chips" id="chatChips"></div>
+  <div class="chat-input"><input id="chatText" type="text" placeholder="Type in EN / हिंदी / ગુજરાતી…"><button id="chatSend">➤</button></div>
+</div>
 
 <footer>NewCraft AI · Jacquard Design Catalog · demo build</footer>
 <script>
@@ -491,7 +585,7 @@ async function seed(){
 }
 
 /* ===== router ===== */
-const CUST=['catalog','detail'], ADM=['admin','adminUpload','adminDesigns','adminCustomers','adminBuilder'];
+const CUST=['catalog','detail'], ADM=['admin','adminUpload','adminDesigns','adminCustomers','adminBuilder','editor'];
 function go(screen){
   const u=App.user();
   if(ADM.includes(screen)&&u?.role!=='admin')screen='auth';
@@ -552,6 +646,7 @@ const Catalog=(()=>{
     // deep design info (colour shades + codes + specs)
     const specs=await specsFor(d);
     if(currentId!==id) return; // user navigated away
+    $('dColourway').innerHTML=specs.palette.map(c=>`<span style="background:${c.hex}" data-hex="${c.hex.toUpperCase()}"></span>`).join('');
     const totalIn = (specs.hooks&&specs.cards) ? (specs.cards/48).toFixed(1)+'"' : '—';
     const widthIn = specs.hooks ? (specs.hooks/108).toFixed(1)+'"' : '—';
     $('dSpecs').innerHTML=[
@@ -622,7 +717,7 @@ const Admin=(()=>{
           <b>${d.name}</b>
           <span class="adm-sub">${d.category} · ${d.files.length} file${d.files.length!==1?'s':''} · <span class="pill ${d.published?'ok':'off'}">${d.published?'Published':'Hidden'}</span></span>
           <div class="adm-chips">${d.files.map(f=>`<span class="file-chip" style="cursor:pointer" onclick="Admin.dl('${d.id}','${f.id}')">${fileIcon(f.name)} ${f.name.split('.').pop().toUpperCase()} ⬇</span>`).join('')}</div>
-          <div class="adm-actions"><button class="tbtn" onclick="Admin.togglePub('${d.id}')">${d.published?'Hide':'Publish'}</button><button class="tbtn danger" onclick="Admin.del('${d.id}')">Delete</button></div>
+          <div class="adm-actions"><button class="tbtn" onclick="Editor.open('${d.id}')">✏️ Edit</button><button class="tbtn" onclick="Admin.togglePub('${d.id}')">${d.published?'Hide':'Publish'}</button><button class="tbtn danger" onclick="Admin.del('${d.id}')">Delete</button></div>
         </div>
       </div>`).join('');
   }
@@ -698,6 +793,92 @@ const Builder=(()=>{
   return { init, render, generate, dl, publish };
 })();
 
+/* ===== deep editor (admin) ===== */
+function hexToRgb(hex){const h=hex.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function loadImageURL(url){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});}
+async function modelFromDesign(d){ const k=(d.specs&&d.specs.k)||d.k||6; const img=await loadImageURL(d.thumb); const w=Math.min(480,img.width||480), h=Math.max(1,Math.round(w*(img.height||600)/(img.width||480))); const cv=document.createElement('canvas'); cv.width=w;cv.height=h; cv.getContext('2d').drawImage(img,0,0,w,h); const q=quantize(cv.getContext('2d').getImageData(0,0,w,h),Math.max(2,Math.min(8,k))); return {indices:q.indices,palette:q.palette,pct:q.pct,w,h,title:d.name,category:d.category,sourceId:d.id}; }
+const Editor=(()=>{
+  let D=null; const undoStack=[];
+  const isOpen=()=>D!==null;
+  function snapshot(){ undoStack.push({indices:new Uint8Array(D.indices),palette:D.palette.map(c=>[...c]),pct:[...D.pct],w:D.w,h:D.h}); if(undoStack.length>15)undoStack.shift(); }
+  function undo(){ const s=undoStack.pop(); if(s){D.indices=s.indices;D.palette=s.palette;D.pct=s.pct;D.w=s.w;D.h=s.h;render();} }
+  async function open(id){ const d=Designs.all().find(x=>x.id===id); if(!d)return; D=await modelFromDesign(d); undoStack.length=0; $('edTitle').value=D.title; $('edCat').textContent=D.category; $('edK').value=Math.min(8,D.palette.length); render(); go('editor'); Chat.notifyOpen(); }
+  function computePct(){ const counts=new Array(D.palette.length).fill(0); D.indices.forEach(i=>counts[i]++); D.pct=counts.map(c=>+(c*100/D.indices.length).toFixed(2)); }
+  function paint(){ const cv=$('edCanvas'); const off=indicesToCanvas(D.indices,D.w,D.h,D.palette); cv.width=D.w;cv.height=D.h; cv.getContext('2d').drawImage(off,0,0); }
+  function render(){ if(!D)return; paint(); $('edLayers').innerHTML=D.palette.map((rgb,i)=>`<div class="ed-layer"><input type="color" value="${rgbToHex(rgb)}" onchange="Editor.recolor(${i},this.value)"><span>${YARN[i]||('Shade '+(i+1))}</span><span class="ed-hex">${rgbToHex(rgb).toUpperCase()}</span><span class="ed-pct">${(D.pct[i]||0).toFixed(1)}%</span></div>`).join(''); $('edMetrics').textContent=`${D.w} × ${D.h} px · ${D.palette.length} colours · tap a swatch to change any shade`; }
+  function recolor(i,hex){snapshot();D.palette[i]=hexToRgb(hex);render();}
+  function recolorRGB(i,rgb){snapshot();D.palette[i]=rgb;render();}
+  function flipH(){snapshot();const{indices,w,h}=D;for(let y=0;y<h;y++)indices.subarray(y*w,y*w+w).reverse();render();}
+  function flipV(){snapshot();const{indices,w,h}=D;for(let y=0;y<(h>>1);y++){const a=indices.subarray(y*w,y*w+w),b=indices.subarray((h-1-y)*w,(h-1-y)*w+w);const t=new Uint8Array(a);a.set(b);b.set(t);}render();}
+  function rotate180(){snapshot();D.indices.reverse();render();}
+  function mirrorPanel(){snapshot();const{indices,w,h}=D;for(let y=0;y<h;y++)for(let x=(w>>1);x<w;x++)indices[y*w+x]=indices[y*w+(w-1-x)];computePct();render();}
+  function scalePattern(f){snapshot();const{indices,w,h}=D;const sw=Math.max(8,Math.round(w*f)),sh=Math.max(8,Math.round(h*f));const scaled=new Uint8Array(sw*sh);for(let y=0;y<sh;y++)for(let x=0;x<sw;x++)scaled[y*sw+x]=indices[Math.min(h-1,Math.floor(y/f))*w+Math.min(w-1,Math.floor(x/f))];const out=new Uint8Array(w*h);for(let y=0;y<h;y++)for(let x=0;x<w;x++)out[y*w+x]=scaled[(y%sh)*sw+(x%sw)];D.indices=out;computePct();render();}
+  function variation(){ snapshot(); const shift=60+((D.indices[7]||3)*47)%240; D.palette=D.palette.map((rgb,i)=>{ if(i===0)return rgb; let [r,g,b]=rgb.map(v=>v/255); const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2; let hh=0,s=0; if(mx!==mn){const dd=mx-mn;s=l>.5?dd/(2-mx-mn):dd/(mx+mn);hh=mx===r?((g-b)/dd+(g<b?6:0)):mx===g?(b-r)/dd+2:(r-g)/dd+4;hh*=60;} hh=(hh+shift)%360; const c=(1-Math.abs(2*l-1))*s,x2=c*(1-Math.abs((hh/60)%2-1)),m=l-c/2; const [r2,g2,b2]=hh<60?[c,x2,0]:hh<120?[x2,c,0]:hh<180?[0,c,x2]:hh<240?[0,x2,c]:hh<300?[x2,0,c]:[c,0,x2]; return [(r2+m)*255,(g2+m)*255,(b2+m)*255].map(Math.round); }); render(); }
+  function requantize(){snapshot();const k=+$('edK').value;const off=indicesToCanvas(D.indices,D.w,D.h,D.palette);const q=quantize(off.getContext('2d').getImageData(0,0,D.w,D.h),k);D.indices=q.indices;D.palette=q.palette;D.pct=q.pct;render();}
+  async function buildFiles(model){ const base=(model.title||'design').replace(/\s+/g,'_'); const rc=indicesToCanvas(model.indices,model.w,model.h,model.palette); const png=await new Promise(r=>rc.toBlob(r,'image/png')); const jpg=await new Promise(r=>rc.toBlob(r,'image/jpeg',0.9)); const bmp=writeBMP(model.indices,model.w,model.h,model.palette); const pdf=buildCardPDF(model.title,model.category,model.w,model.h,model.palette,model.pct); const zip=makeZip([{name:base+'.png',data:await blobU8(png)},{name:base+'.bmp',data:await blobU8(bmp)},{name:base+'_card.pdf',data:await blobU8(pdf)}]); return [{name:base+'.png',type:'image/png',blob:png},{name:base+'.jpg',type:'image/jpeg',blob:jpg},{name:base+'.bmp',type:'image/bmp',blob:bmp},{name:base+'_card.pdf',type:'application/pdf',blob:pdf},{name:base+'_package.zip',type:'application/zip',blob:zip}]; }
+  function thumbOf(model){ const rc=indicesToCanvas(model.indices,model.w,model.h,model.palette); const t=document.createElement('canvas'); t.width=300;t.height=Math.max(1,Math.round(300*model.h/model.w)); t.getContext('2d').drawImage(rc,0,0,t.width,t.height); return t.toDataURL('image/jpeg',0.72); }
+  function specsOf(model,d){ return {palette:model.palette.map((rgb,i)=>({hex:rgbToHex(rgb),pct:model.pct[i]})),k:model.palette.length,hooks:(d&&d.hooks)||null,cards:(d&&d.cards)||null}; }
+  async function save(){ if(!D)return; D.title=$('edTitle').value.trim()||D.title; const files=await buildFiles(D); const l=Designs.all(); const d=l.find(x=>x.id===D.sourceId); if(!d)return; for(const f of d.files) await IDB.del(f.id); const files2=[]; for(const f of files){const id=rid();await IDB.put(id,f.blob);files2.push({id,name:f.name,type:f.type,size:f.blob.size});} d.name=D.title; d.files=files2; d.thumb=thumbOf(D); d.k=D.palette.length; d.specs=specsOf(D,d); Designs.save(l); logMe('✏️','Edited design '+D.title,d.id); go('adminDesigns'); }
+  async function saveCopy(){ if(!D)return; const title=($('edTitle').value.trim()||D.title)+' (Copy)'; const model={...D,title}; const files=await buildFiles(model); const files2=[]; for(const f of files){const id=rid();await IDB.put(id,f.blob);files2.push({id,name:f.name,type:f.type,size:f.blob.size});} const l=Designs.all(); const did='d'+Date.now(); l.unshift({id:did,name:title,category:D.category,description:'Edited '+D.category.toLowerCase()+' design.',thumb:thumbOf(model),files:files2,k:D.palette.length,specs:specsOf(model,null),date:new Date().toLocaleDateString(),published:true}); Designs.save(l); logMe('✨','Saved edited copy '+title,did); go('adminDesigns'); }
+  function downloadPNG(){ if(!D)return; const rc=indicesToCanvas(D.indices,D.w,D.h,D.palette); rc.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(D.title||'design').replace(/\s+/g,'_')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);}); }
+  function downloadBMP(){ if(!D)return; const b=writeBMP(D.indices,D.w,D.h,D.palette); const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(D.title||'design').replace(/\s+/g,'_')+'.bmp';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000); }
+  return { open, undo, recolor, recolorRGB, flipH, flipV, rotate180, mirrorPanel, scalePattern, variation, requantize, save, saveCopy, downloadPNG, downloadBMP, isOpen, get:()=>D };
+})();
+
+/* ===== trilingual AI chat (EN / हिंदी / ગુજરાતી) ===== */
+const Chat=(()=>{
+  const COLOR_DEFS=[
+    {rgb:[200,30,45],names:{en:'red',hi:'लाल',gu:'લાલ'},words:['red','लाल','લાલ','lal']},
+    {rgb:[122,18,48],names:{en:'maroon',hi:'मैरून',gu:'મરૂન'},words:['maroon','मैरून','મરૂન']},
+    {rgb:[212,160,23],names:{en:'gold',hi:'गोल्ड',gu:'ગોલ્ડ'},words:['gold','golden','गोल्ड','सुनहरा','ગોલ્ડ','સોનેરી','sona']},
+    {rgb:[26,58,92],names:{en:'blue',hi:'नीला',gu:'વાદળી'},words:['blue','नीला','વાદળી','blu','nila']},
+    {rgb:[14,77,58],names:{en:'green',hi:'हरा',gu:'લીલો'},words:['green','हरा','લીલો','lilo','hara']},
+    {rgb:[214,74,125],names:{en:'pink',hi:'गुलाबी',gu:'ગુલાબી'},words:['pink','गुलाबी','ગુલાબી','gulabi']},
+    {rgb:[61,26,79],names:{en:'purple',hi:'बैंगनी',gu:'જાંબલી'},words:['purple','बैंगनी','જાંબલી','jambli']},
+    {rgb:[242,232,213],names:{en:'cream',hi:'क्रीम',gu:'ક્રીમ'},words:['cream','white','सफेद','क्रीम','સફેદ','ક્રીમ','safed']},
+    {rgb:[34,34,40],names:{en:'black',hi:'काला',gu:'કાળો'},words:['black','काला','કાળો','kala','kalo']},
+    {rgb:[230,140,30],names:{en:'orange',hi:'नारंगी',gu:'નારંગી'},words:['orange','नारंगी','નારંગી','kesari']},
+    {rgb:[15,74,82],names:{en:'teal',hi:'टील',gu:'ટીલ'},words:['teal','टील','ટીલ']},
+    {rgb:[200,204,216],names:{en:'silver',hi:'सिल्वर',gu:'સિલ્વર'},words:['silver','सिल्वर','સિલ્વર','chandi']},
+  ];
+  const LAYER_DEFS=[
+    {i:0,names:{en:'Ground',hi:'ग्राउंड',gu:'ગ્રાઉન્ડ'},words:['ground','background','base','जमीन','ग्राउंड','ગ્રાઉન્ડ','જમીન','jamin']},
+    {i:1,names:{en:'Zari / Butti',hi:'जरी/बूटी',gu:'ઝરી/બુટ્ટી'},words:['zari','jari','जरी','ઝરી','butti','buti','बूटी','બુટ્ટી','motif','flower','फूल','ફૂલ','ful']},
+    {i:2,names:{en:'Second shade',hi:'दूसरा',gu:'બીજો'},words:['jari z','second','दूसरा','બીજો']},
+    {i:3,names:{en:'MX',hi:'MX',gu:'MX'},words:['mx','mix','मिक्स','મિક્સ']},
+  ];
+  const A={flip:['flip','mirror','उल्टा','उलटा','मिरर','ઊંધું','ઊંધી','ulta','undhu','palto'],bigger:['bigger','big','large','बड़ा','बड़ी','મોટું','મોટી','mota','moti','bada'],smaller:['smaller','small','छोटा','छोटी','નાનું','નાની','nana','nani','chota'],variation:['variation','again','another','new design','फिर','दुबारा','दूसरी','नई','ફરી','બીજી','નવી','fari','firse','navi'],help:['help','मदद','હેલ્પ','મદદ','madad'],hello:['hello','hey','namaste','नमस्ते','નમસ્તે','kem cho']};
+  const R={en:{hello:"Namaste! 🙏 I edit the open design. Try:\n• \"make ground red\"\n• \"zari gold karo\"\n• \"flip design\"\n• \"butti smaller\"\n• \"new variation\"",help:"I understand English, हिंदी and ગુજરાતી.\nRecolour any layer, flip/mirror, butti bigger/smaller, new variation.",color:(l,c)=>`Done ✔ ${l} recoloured to ${c}. Check the canvas!`,flip:"Done ✔ design mirrored.",bigger:"Done ✔ pattern scaled bigger.",smaller:"Done ✔ butti finer.",variation:"Done ✨ new colourway. Say it again for another!",noDesign:"Open a design first — Admin → Designs → ✏️ Edit.",fallback:"Try: \"ground blue karo\", \"flip design\", \"butti smaller\", \"new variation\" — or \"help\"."},
+    hi:{hello:"नमस्ते! 🙏 मैं खुली डिज़ाइन एडिट करता हूँ। बोलिए:\n• \"ग्राउंड लाल करो\"\n• \"जरी गोल्ड करो\"\n• \"डिज़ाइन उल्टा करो\"\n• \"बूटी छोटी करो\"\n• \"नई वेरिएशन\"",help:"मैं English, हिंदी और ગુજરાતી समझता हूँ। किसी लेयर का रंग बदलें, उल्टा करें, बूटी बड़ी/छोटी, नई वेरिएशन।",color:(l,c)=>`हो गया ✔ ${l} का रंग ${c} कर दिया।`,flip:"हो गया ✔ डिज़ाइन मिरर कर दी।",bigger:"हो गया ✔ पैटर्न बड़ा कर दिया।",smaller:"हो गया ✔ बूटी छोटी कर दी।",variation:"हो गया ✨ नई कलर वेरिएशन।",noDesign:"पहले डिज़ाइन खोलें — Admin → Designs → ✏️ Edit।",fallback:"बोलिए: \"ग्राउंड नीला करो\", \"उल्टा करो\", \"बूटी छोटी करो\", \"नई वेरिएशन\"।"},
+    gu:{hello:"નમસ્તે! 🙏 હું ખુલેલી ડિઝાઇન એડિટ કરું છું. બોલો:\n• \"ગ્રાઉન્ડ લાલ કરો\"\n• \"ઝરી ગોલ્ડ કરો\"\n• \"ડિઝાઇન ઊંધી કરો\"\n• \"બુટ્ટી નાની કરો\"\n• \"નવી વેરિએશન\"",help:"હું English, હિન્દી અને ગુજરાતી સમજું છું. કોઈ લેયરનો કલર બદલો, ઊંધી કરો, બુટ્ટી મોટી/નાની, નવી વેરિએશન.",color:(l,c)=>`થઈ ગયું ✔ ${l} નો કલર ${c} કર્યો.`,flip:"થઈ ગયું ✔ ડિઝાઇન મિરર કરી.",bigger:"થઈ ગયું ✔ પેટર્ન મોટી કરી.",smaller:"થઈ ગયું ✔ બુટ્ટી નાની કરી.",variation:"થઈ ગયું ✨ નવી કલરવે.",noDesign:"પહેલા ડિઝાઇન ખોલો — Admin → Designs → ✏️ Edit.",fallback:"બોલો: \"ગ્રાઉન્ડ વાદળી કરો\", \"ઊંધી કરો\", \"બુટ્ટી નાની કરો\", \"નવી વેરિએશન\"."}};
+  const CHIPS=["Ground red karo","जरी गोल्ड करो","ડિઝાઇન ઊંધી કરો","Butti smaller","New variation","Help"];
+  let lang='en';
+  const detect=t=>/[઀-૿]/.test(t)?'gu':/[ऀ-ॿ]/.test(t)?'hi':'en';
+  const has=(t,w)=>w.some(x=>t.includes(x));
+  function open(){ $('chatPanel').classList.remove('hidden'); $('chatText').focus(); }
+  function close(){ $('chatPanel').classList.add('hidden'); }
+  function toggle(){ $('chatPanel').classList.toggle('hidden'); }
+  function addMsg(t,who){ const d=document.createElement('div'); d.className='msg '+who; d.textContent=t; $('chatMsgs').appendChild(d); $('chatMsgs').scrollTop=1e9; }
+  const bot=t=>addMsg(t,'bot');
+  function notifyOpen(){ if(!$('chatPanel').classList.contains('hidden')) bot(R[lang].hello); }
+  function process(raw){ const t=raw.toLowerCase(); lang=detect(raw); const S=R[lang];
+    if(has(t,A.help))return bot(S.help);
+    const need=has(t,A.flip)||has(t,A.bigger)||has(t,A.smaller)||has(t,A.variation)||COLOR_DEFS.some(c=>has(t,c.words));
+    if(need&&!Editor.isOpen())return bot(S.noDesign);
+    if(has(t,A.flip)){Editor.flipH();go('editor');return bot(S.flip);}
+    if(has(t,A.smaller)){Editor.scalePattern(0.75);go('editor');return bot(S.smaller);}
+    if(has(t,A.bigger)){Editor.scalePattern(1.35);go('editor');return bot(S.bigger);}
+    if(has(t,A.variation)){Editor.variation();go('editor');return bot(S.variation);}
+    const color=COLOR_DEFS.find(c=>has(t,c.words));
+    if(color){ const layer=LAYER_DEFS.find(l=>has(t,l.words))||LAYER_DEFS[1]; const D=Editor.get(); const li=Math.min(layer.i,D.palette.length-1); Editor.recolorRGB(li,[...color.rgb]); go('editor'); return bot(S.color(layer.names[lang],color.names[lang])); }
+    if(has(t,A.hello))return bot(S.hello);
+    bot(S.fallback);
+  }
+  function send(text){ const v=(text??$('chatText').value).trim(); if(!v)return; addMsg(v,'me'); $('chatText').value=''; process(v); }
+  function init(){ $('chatFab').addEventListener('click',toggle); $('chatSend').addEventListener('click',()=>send()); $('chatText').addEventListener('keydown',e=>{if(e.key==='Enter')send();}); $('chatChips').innerHTML=CHIPS.map(c=>`<div class="cchip" onclick="Chat.send('${c}')">${c}</div>`).join(''); addMsg(R.en.hello,'bot'); }
+  return { init, open, close, send, notifyOpen };
+})();
+
 /* ===== app / auth ===== */
 const App=(()=>{
   let authMode='login', authRole='customer';
@@ -711,6 +892,7 @@ const App=(()=>{
     $('mainNav').innerHTML=items.map(([s,l])=>`<a data-nav="${s}" onclick="go('${s}')">${l}</a>`).join('');
     $('navAuth').innerHTML=u?`<div class="glass user-chip"><span class="uc-av">${(u.name||'?')[0].toUpperCase()}</span><span class="uc-name">${u.name}${u.role==='admin'?'<span class="admin-badge">ADMIN</span>':''}</span><button class="uc-out" onclick="App.logout()" title="Sign out"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button></div>`
       :`<a class="btn btn-gold" style="padding:10px 22px;font-size:.84rem" onclick="go('auth')">Sign In</a>`;
+    const fab=$('chatFab'); if(fab){ fab.classList.toggle('hidden',!(u&&u.role==='admin')); if(!(u&&u.role==='admin'))$('chatPanel').classList.add('hidden'); }
   }
   function setAuthRole(role){
     authRole=role; const admin=role==='admin';
@@ -751,7 +933,7 @@ const App=(()=>{
   async function init(){
     await IDB.open(); await seed();
     $('logoTop').innerHTML=logoSVG(44,'t'); $('logoHero').innerHTML=logoSVG(100,'h'); $('logoAuth').innerHTML=logoSVG(62,'a'); $('logoLoader').innerHTML=logoSVG(96,'l');
-    renderNav(); setAuthRole('customer'); Admin.initUpload(); Builder.init();
+    renderNav(); setAuthRole('customer'); Admin.initUpload(); Builder.init(); Chat.init();
     $('authForm').addEventListener('submit',authSubmit);
     $('authToggle').addEventListener('click',()=>setAuthMode(authMode==='login'?'register':'login'));
     $('navBurger').addEventListener('click',e=>{e.stopPropagation();$('mainNav').classList.toggle('open');});
