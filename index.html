@@ -105,6 +105,13 @@ select option{background:#1c1730}
 .detail-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:26px}
 .detail-thumb{border-radius:16px;overflow:hidden;border:1px solid var(--stroke);background:rgba(255,255,255,.05)}
 .detail-thumb img{width:100%;display:block}
+.spec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 18px}
+.spec{padding:11px 13px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--stroke)}
+.spec .sk{font-size:.6rem;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-dim)}
+.spec .sv{font-family:"Sora";font-weight:700;font-size:1rem;margin-top:3px}
+.shade-sw{width:38px;height:26px;border-radius:7px;border:1px solid rgba(255,255,255,.3);flex:0 0 auto}
+.detail-h3{font-size:.95rem;margin:8px 0 12px}
+@media (max-width:480px){.spec-grid{grid-template-columns:1fr 1fr}}
 .file-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--stroke);margin-bottom:10px}
 .file-ic{font-size:1.3rem}
 .file-meta{flex:1;min-width:0}
@@ -261,8 +268,12 @@ document.getElementById('nc-gate-pass').focus();})();
         <span class="cat-cat" id="dCat"></span>
         <h2 style="font-size:1.5rem;margin:10px 0 6px" id="dName"></h2>
         <p style="color:var(--ink-dim);font-size:.88rem;line-height:1.6;margin-bottom:18px" id="dDesc"></p>
-        <div id="dPerm"></div>
-        <h3 style="font-size:.95rem;margin:6px 0 12px">Production Files</h3>
+        <h3 class="detail-h3">Design Details</h3>
+        <div class="spec-grid" id="dSpecs"></div>
+        <h3 class="detail-h3">Colour Shades &amp; Codes</h3>
+        <div id="dShades"></div>
+        <div style="margin-top:18px" id="dPerm"></div>
+        <h3 class="detail-h3">Production Files</h3>
         <div id="dFiles"></div>
       </div>
     </div>
@@ -285,6 +296,9 @@ document.getElementById('nc-gate-pass').focus();})();
     <div class="form-grid">
       <label>Design Name<input id="uName" type="text" placeholder="Royal Maroon Palav"></label>
       <label>Section<select id="uCat"><option>Saree Palav</option><option>Saree Border</option><option>Blouse</option><option>Lehenga</option><option>Piece Cloth</option><option>Butti</option></select></label>
+      <label>Total Hooks <span style="opacity:.6">(optional)</span><input id="uHooks" type="number" min="64" placeholder="e.g. 5376"></label>
+      <label>Total Cards <span style="opacity:.6">(optional)</span><input id="uCards" type="number" min="64" placeholder="e.g. 4385"></label>
+      <label>Colours (K) <span style="opacity:.6">(shades to read)</span><select id="uK"><option>2</option><option>3</option><option>4</option><option>5</option><option selected>6</option><option>7</option><option>8</option></select></label>
     </div>
     <div class="full"><label>Description<textarea id="uDesc" rows="2" placeholder="Short description for buyers…"></textarea></label></div>
     <div class="full"><label>Preview Image (thumbnail)
@@ -379,6 +393,20 @@ const fmtSize = b => b<1024?b+' B':b<1048576?(b/1024).toFixed(0)+' KB':(b/104857
 const fileIcon = n => { const e=(n.split('.').pop()||'').toLowerCase();
   return e==='pdf'?'📄':['png','jpg','jpeg','webp','bmp','gif'].includes(e)?'🖼️':['rar','zip','7z'].includes(e)?'🗜️':'📎'; };
 const rid = () => 'f'+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36);
+const rgbToHex = rgb => '#'+rgb.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
+const YARN = ['Ground Fabric','Jari S (Gold)','Jari Z (Dark Gold)','MX Blend','Extra Weft','Extra Weft 2','Cut Work','Cut Work 2'];
+function paletteFromCanvas(cv,k){ const g=cv.getContext('2d'); const q=quantize(g.getImageData(0,0,cv.width,cv.height),Math.max(2,Math.min(8,k))); return q.palette.map((rgb,i)=>({hex:rgbToHex(rgb),pct:q.pct[i]})); }
+function paletteFromDataURL(url,k){ return new Promise(res=>{ const img=new Image(); img.onload=()=>{ const w=Math.min(240,img.width||240),h=Math.max(1,Math.round(w*(img.height||300)/(img.width||240))); const c=document.createElement('canvas'); c.width=w;c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); res(paletteFromCanvas(c,k)); }; img.onerror=()=>res([]); img.src=url; }); }
+async function specsFor(d){
+  if(d.specs&&d.specs.palette&&d.specs.palette.length) return d.specs;
+  let pal;
+  if(d.palette&&d.pct){ pal=d.palette.map((rgb,i)=>({hex:rgbToHex(rgb),pct:d.pct[i]})); }
+  else { pal=await paletteFromDataURL(d.thumb, d.k||6); }
+  const specs={ palette:pal, k:pal.length, hooks:d.hooks||null, cards:d.cards||null };
+  const l=Designs.all(); const t=l.find(x=>x.id===d.id); if(t){ t.specs=specs; Designs.save(l); }
+  d.specs=specs; return specs;
+}
+function designCode(id){ return 'NC-'+(id.replace(/\D/g,'').slice(-6)||'000000').padStart(6,'0'); }
 
 /* ===== seed demo data (once) ===== */
 function drawThumb(kind,W,H,P){ const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d');
@@ -429,7 +457,8 @@ async function seed(){
       await IDB.put(id,blob);
       files.push({id,name:base+'.'+ext,type:blob.type,size:blob.size});
     }
-    designs.push({id:'d'+i,name,category:cat,description:'Production-grade '+cat.toLowerCase()+' design with full file package.',thumb,files,date:'2026-06-'+(12+i),published:true});
+    const hooks=1344, cards=1100; const pal4=paletteFromCanvas(big,4);
+    designs.push({id:'d'+i,name,category:cat,description:'Production-grade '+cat.toLowerCase()+' design with full file package.',thumb,files,hooks,cards,k:4,specs:{palette:pal4,k:4,hooks,cards},date:'2026-06-'+(12+i),published:true});
   }
   Designs.save(designs);
   localStorage.setItem('nc_catalog_seeded_v1','1');
@@ -478,7 +507,7 @@ const Catalog=(()=>{
       <div class="cat-files">📦 ${d.files.length} file${d.files.length!==1?'s':''} · ${d.files.map(f=>f.name.split('.').pop().toUpperCase()).join(', ')}</div></div></div>`).join('');
   }
   function setFilter(c){filter=c;render();}
-  function open(id){
+  async function open(id){
     App.refreshPerm();
     currentId=id; const d=Designs.all().find(x=>x.id===id); if(!d)return;
     const u=App.user(); const can=u&&(u.canDownload||u.role==='admin');
@@ -491,7 +520,27 @@ const Catalog=(()=>{
       <div class="file-meta"><b>${f.name}</b><span>${(f.name.split('.').pop()||'').toUpperCase()} · ${fmtSize(f.size)}</span></div>
       <button class="dl-btn" ${can?'':'disabled'} onclick="Catalog.dl('${id}',${i})">${can?'⬇ Download':'🔒 Locked'}</button></div>`).join('')
       + (can?`<button class="btn btn-ghost dl-all" onclick="Catalog.dlAll('${id}')" style="padding:10px 20px;font-size:.82rem;margin-top:6px">⬇ Download all files</button>`:'');
+    $('dSpecs').innerHTML='<div class="spec"><div class="sk">Loading…</div></div>';
+    $('dShades').innerHTML='';
     go('detail');
+    // deep design info (colour shades + codes + specs)
+    const specs=await specsFor(d);
+    if(currentId!==id) return; // user navigated away
+    const totalIn = (specs.hooks&&specs.cards) ? (specs.cards/48).toFixed(1)+'"' : '—';
+    const widthIn = specs.hooks ? (specs.hooks/108).toFixed(1)+'"' : '—';
+    $('dSpecs').innerHTML=[
+      ['Section', d.category],
+      ['Total Hooks', specs.hooks?specs.hooks.toLocaleString():'—'],
+      ['Total Cards', specs.cards?specs.cards.toLocaleString():'—'],
+      ['Colours (K)', specs.k],
+      ['Width', widthIn],
+      ['Design Code', designCode(d.id)],
+    ].map(([k,v])=>`<div class="spec"><div class="sk">${k}</div><div class="sv">${v}</div></div>`).join('');
+    $('dShades').innerHTML=specs.palette.map((c,i)=>`<div class="file-row">
+      <span class="shade-sw" style="background:${c.hex}"></span>
+      <div class="file-meta"><b>${YARN[i]||('Shade '+(i+1))}</b><span>Colour code ${c.hex.toUpperCase()} · ${c.pct.toFixed(1)}% area</span></div>
+      <span style="font-weight:700;font-size:.82rem">${c.pct.toFixed(1)}%</span></div>`).join('')
+      || '<p style="color:var(--ink-dim);font-size:.82rem">Colour data unavailable.</p>';
   }
   async function dl(id,i){ const d=Designs.all().find(x=>x.id===id); await downloadFile(d.files[i]); logMe('⬇','Downloaded '+d.files[i].name+' — '+d.name,id); }
   async function dlAll(id){ const d=Designs.all().find(x=>x.id===id); for(const f of d.files){ await downloadFile(f); await new Promise(r=>setTimeout(r,400)); } logMe('📦','Downloaded all files — '+d.name,id); }
@@ -530,8 +579,9 @@ const Admin=(()=>{
     const files=[];
     for(const f of pendingFiles){ const id=rid(); await IDB.put(id,f); files.push({id,name:f.name,type:f.type||'application/octet-stream',size:f.size}); }
     const list=Designs.all(); const did='d'+Date.now();
-    list.unshift({id:did,name,category:$('uCat').value,description:$('uDesc').value.trim()||('Production '+$('uCat').value.toLowerCase()+' design.'),thumb:pendingThumb,files,date:new Date().toLocaleDateString(),published:true});
+    list.unshift({id:did,name,category:$('uCat').value,description:$('uDesc').value.trim()||('Production '+$('uCat').value.toLowerCase()+' design.'),thumb:pendingThumb,files,hooks:+$('uHooks').value||null,cards:+$('uCards').value||null,k:+$('uK').value||6,date:new Date().toLocaleDateString(),published:true});
     Designs.save(list); logMe('⬆','Uploaded '+name,did);
+    $('uHooks').value='';$('uCards').value='';
     $('uName').value='';$('uDesc').value='';$('uThumbLabel').textContent='Click to choose a preview image (PNG/JPG)';
     pendingThumb=null;pendingFiles=[];renderChips();
     go('adminDesigns');
@@ -603,13 +653,13 @@ const Builder=(()=>{
       const bmp=writeBMP(q.indices,hooks,cards,q.palette); const pdf=buildCardPDF(name,cat,hooks,cards,q.palette,q.pct);
       const zip=makeZip([{name:base+'.png',data:await blobU8(png)},{name:base+'.bmp',data:await blobU8(bmp)},{name:base+'_card.pdf',data:await blobU8(pdf)}]);
       const t=document.createElement('canvas');t.width=300;t.height=Math.round(300*cards/hooks);t.getContext('2d').drawImage(rc,0,0,t.width,t.height);const thumb=t.toDataURL('image/jpeg',0.7);
-      last={name,category:cat,thumb,files:[{name:base+'.png',type:'image/png',blob:png},{name:base+'.jpg',type:'image/jpeg',blob:jpg},{name:base+'.bmp',type:'image/bmp',blob:bmp},{name:base+'_card.pdf',type:'application/pdf',blob:pdf},{name:base+'_package.zip',type:'application/zip',blob:zip}]};
+      last={name,category:cat,thumb,hooks,cards,k,palette:q.palette,pct:q.pct,files:[{name:base+'.png',type:'image/png',blob:png},{name:base+'.jpg',type:'image/jpeg',blob:jpg},{name:base+'.bmp',type:'image/bmp',blob:bmp},{name:base+'_card.pdf',type:'application/pdf',blob:pdf},{name:base+'_package.zip',type:'application/zip',blob:zip}]};
       $('bMetrics').textContent='🧵 '+hooks.toLocaleString()+' hooks × '+cards.toLocaleString()+' cards · K'+k+' · '+last.files.length+' files ready';
       $('bDownloads').innerHTML=last.files.map((f,i)=>`<div class="file-row"><span class="file-ic">${fileIcon(f.name)}</span><div class="file-meta"><b>${f.name}</b><span>${(f.name.split('.').pop()||'').toUpperCase()} · ${fmtSize(f.blob.size)}</span></div><button class="dl-btn" onclick="Builder.dl(${i})">⬇ Download</button></div>`).join('');
       $('bResult').classList.remove('hidden'); $('bResult').scrollIntoView({behavior:'smooth'}); logMe('🎨','Generated (AI) '+name);
     }catch(e){ err.textContent='Generation failed: '+e.message; } finally{ btn.disabled=false; btn.textContent='✦ Generate Design'; } }
   function dl(i){ const f=last.files[i]; const a=document.createElement('a'); a.href=URL.createObjectURL(f.blob); a.download=f.name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); }
-  async function publish(){ if(!last)return; const files2=[]; for(const f of last.files){ const id=rid(); await IDB.put(id,f.blob); files2.push({id,name:f.name,type:f.type,size:f.blob.size}); } const l=Designs.all(); const did='d'+Date.now(); l.unshift({id:did,name:last.name,category:last.category,description:'AI-generated '+last.category.toLowerCase()+' design.',thumb:last.thumb,files:files2,date:new Date().toLocaleDateString(),published:true}); Designs.save(l); logMe('✨','Published AI design '+last.name,did); $('bResult').classList.add('hidden'); go('adminDesigns'); }
+  async function publish(){ if(!last)return; const files2=[]; for(const f of last.files){ const id=rid(); await IDB.put(id,f.blob); files2.push({id,name:f.name,type:f.type,size:f.blob.size}); } const l=Designs.all(); const did='d'+Date.now(); l.unshift({id:did,name:last.name,category:last.category,description:'AI-generated '+last.category.toLowerCase()+' design.',thumb:last.thumb,files:files2,hooks:last.hooks,cards:last.cards,k:last.k,specs:{palette:last.palette.map((rgb,i)=>({hex:rgbToHex(rgb),pct:last.pct[i]})),k:last.k,hooks:last.hooks,cards:last.cards},date:new Date().toLocaleDateString(),published:true}); Designs.save(l); logMe('✨','Published AI design '+last.name,did); $('bResult').classList.add('hidden'); go('adminDesigns'); }
   return { init, render, generate, dl, publish };
 })();
 
