@@ -229,6 +229,26 @@ select option{background:#1c1730}
 .status.pending{background:rgba(212,160,23,.16);color:var(--gold-soft)}
 .status.approved{background:rgba(87,201,139,.16);color:var(--ok)}
 .status.rejected{background:rgba(255,122,122,.16);color:var(--fail)}
+/* home polish + animation */
+.hero-badge{display:inline-block;padding:7px 16px;border-radius:999px;font-size:.72rem;font-weight:600;color:var(--gold-soft);background:rgba(212,160,23,.1);border:1px solid rgba(212,160,23,.3);margin-bottom:20px;letter-spacing:.3px}
+.home-preview{display:flex;gap:12px;justify-content:center;margin:36px auto 0;max-width:600px;overflow:hidden;-webkit-mask:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
+.home-preview img{width:96px;height:120px;object-fit:cover;border-radius:13px;border:1px solid var(--stroke);box-shadow:0 12px 28px rgba(0,0,0,.4);animation:floaty 4.5s ease-in-out infinite}
+.home-preview img:nth-child(2){animation-delay:.5s}.home-preview img:nth-child(3){animation-delay:1s}.home-preview img:nth-child(4){animation-delay:1.5s}.home-preview img:nth-child(5){animation-delay:2s}
+@keyframes floaty{50%{transform:translateY(-9px)}}
+.home-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:44px 0 10px}
+.hstat{padding:22px 14px;text-align:center}
+.hstat .n{font-family:"Sora";font-weight:800;font-size:1.7rem;color:var(--gold-soft)}
+.hstat .t{font-size:.68rem;color:var(--ink-dim);margin-top:5px;letter-spacing:.4px}
+.feature{transition:.25s}.feature:hover{transform:translateY(-5px);border-color:rgba(212,160,23,.4)}
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.how-step{padding:24px 20px}
+.how-step .num{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-family:"Sora";font-weight:700;color:#1a1a2e;margin-bottom:14px;background:linear-gradient(135deg,var(--gold-soft),var(--gold))}
+.how-step h3{font-size:.95rem;margin-bottom:7px}.how-step p{color:var(--ink-dim);font-size:.82rem;line-height:1.55}
+.rv{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+.rv-in{opacity:1;transform:none}
+.hero-main>*{animation:fadeUp .8s ease both}
+.hero-main>*:nth-child(2){animation-delay:.08s}.hero-main>*:nth-child(3){animation-delay:.16s}.hero-main>*:nth-child(4){animation-delay:.24s}.hero-main>*:nth-child(5){animation-delay:.32s}.hero-main>*:nth-child(6){animation-delay:.4s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
 #pageLoader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:radial-gradient(900px 600px at 80% -10%,#3b1d3f,transparent 60%),linear-gradient(160deg,#101322,#1a1430 55%,#241028);transition:opacity .6s ease,visibility .6s}
 #pageLoader.done{opacity:0;visibility:hidden}
 .pl-inner{text-align:center}
@@ -260,8 +280,17 @@ footer{text-align:center;padding:26px;color:var(--ink-dim);font-size:.74rem}
   .brand-name{font-size:1rem}
   .ed-grid{grid-template-columns:1fr}
   .ed-top input{max-width:none}
+  .home-stats{grid-template-columns:1fr 1fr}
+  .how{grid-template-columns:1fr}
 }
-@media (max-width:480px){.brand-sub{display:none}.cat-grid{grid-template-columns:1fr 1fr;gap:10px}}
+@media (max-width:480px){
+  .brand-sub{display:none}
+  .cat-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .home-preview img{width:74px;height:92px}
+  .home-preview{gap:9px}
+  .hstat{padding:16px 8px}.hstat .n{font-size:1.35rem}
+  .hero-badge{font-size:.66rem}
+}
 </style>
 </head>
 <body>
@@ -298,16 +327,44 @@ document.getElementById('nc-gate-pass').focus();})();
 <main>
 <!-- HOME -->
 <section class="screen" id="screen-home">
-  <div class="hero"><span class="logo-big" id="logoHero"></span>
+  <div class="hero hero-main">
+    <div class="hero-badge">✦ Surat's AI Jacquard Design House</div>
+    <span class="logo-big" id="logoHero"></span>
     <h1>The Jacquard Design<br>Catalog for Surat</h1>
-    <p>Browse ready-made, production-grade jacquard designs uploaded by NewCraft — saree palav, borders, blouse, lehenga, butti and piece-cloth. Download the complete production files (BMP, PDF, PNG, JPG, RAR) once access is granted.</p>
+    <p>Browse ready-made, production-grade jacquard designs — saree palav, borders, blouse, lehenga, butti &amp; piece-cloth. Get the full production package (BMP · PDF · PNG · JPG · ZIP) with one tap.</p>
     <div class="cta-row"><a class="btn btn-gold" onclick="go('catalog')">✦ Browse Designs</a><a class="btn btn-ghost" onclick="App.gotoLogin('admin')">Admin Login</a></div>
+    <div class="home-preview" id="homePreview"></div>
   </div>
-  <h2 class="sec-title">How It Works</h2><p class="sec-sub">Simple for buyers, powerful for the catalog owner.</p>
+
+  <div class="home-stats">
+    <div class="glass hstat rv"><div class="n" id="hsDesigns">6</div><div class="t">READY DESIGNS</div></div>
+    <div class="glass hstat rv"><div class="n">6</div><div class="t">PRODUCT SECTIONS</div></div>
+    <div class="glass hstat rv"><div class="n">5</div><div class="t">FILE FORMATS</div></div>
+    <div class="glass hstat rv"><div class="n">3</div><div class="t">भाषा · EN / हिं / ગુ</div></div>
+  </div>
+
+  <h2 class="sec-title rv">Everything, Ready to Weave</h2>
+  <p class="sec-sub rv">A complete production package behind every single design.</p>
   <div class="features">
-    <div class="glass feature"><div class="ic">🖼️</div><h3>Browse the Catalog</h3><p>Customers explore every design the admin has published, organised by product section with a preview of each.</p></div>
-    <div class="glass feature"><div class="ic">📦</div><h3>Multi-Format Files</h3><p>Each design carries its full production package — PNG, JPG, PDF design card, indexed BMP and RAR/ZIP source — ready to download.</p></div>
-    <div class="glass feature"><div class="ic">🔐</div><h3>Download by Permission</h3><p>Downloads open only for customers the admin has approved. Everyone else can view but not download until granted access.</p></div>
+    <div class="glass feature rv"><div class="ic">🖼️</div><h3>Curated Catalog</h3><p>Every design is organised by product section with a crisp preview, search, sort and favourites.</p></div>
+    <div class="glass feature rv"><div class="ic">🎨</div><h3>Deep Colour Info</h3><p>See the full colourway, each yarn shade with its exact hex code and area %, hooks, cards and design code.</p></div>
+    <div class="glass feature rv"><div class="ic">📦</div><h3>Multi-Format Files</h3><p>PNG, JPG, PDF design card, indexed production BMP and a ZIP package — all ready to download.</p></div>
+    <div class="glass feature rv"><div class="ic">🔐</div><h3>Ordered &amp; Approved</h3><p>Request any design; downloads open the moment the admin approves your order. Fully controlled.</p></div>
+    <div class="glass feature rv"><div class="ic">🎛</div><h3>AI Builder &amp; Editor</h3><p>The house generates and deeply edits designs — recolour shades, mirror, scale — with an AI assistant.</p></div>
+    <div class="glass feature rv"><div class="ic">💬</div><h3>3-Language Assistant</h3><p>Give instructions in English, हिंदी or ગુજરાતી and watch the design update instantly.</p></div>
+  </div>
+
+  <h2 class="sec-title rv">How It Works</h2>
+  <p class="sec-sub rv">Three simple steps from browse to weave.</p>
+  <div class="how">
+    <div class="glass how-step rv"><div class="num">1</div><h3>Browse &amp; Request</h3><p>Explore the catalog, save favourites, and request the design you want.</p></div>
+    <div class="glass how-step rv"><div class="num">2</div><h3>Get Approved</h3><p>The design house approves your order and unlocks the full file package for you.</p></div>
+    <div class="glass how-step rv"><div class="num">3</div><h3>Download &amp; Weave</h3><p>Download the indexed BMP, design card and renders — straight to your loom.</p></div>
+  </div>
+
+  <div class="hero" style="padding-top:52px">
+    <h2 class="rv" style="font-size:1.6rem">Ready to explore the collection?</h2>
+    <div class="cta-row"><a class="btn btn-gold rv" onclick="go('catalog')">✦ Open the Catalog</a></div>
   </div>
 </section>
 
@@ -441,7 +498,10 @@ document.getElementById('nc-gate-pass').focus();})();
         <div class="cat-files" id="bMetrics" style="margin-bottom:14px"></div>
         <h3 style="font-size:.95rem;margin-bottom:12px">Download (multiple formats)</h3>
         <div id="bDownloads"></div>
-        <button class="btn btn-gold" style="margin-top:14px;padding:11px 20px;font-size:.85rem" onclick="Builder.publish()">⬆ Publish to Catalog</button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+          <button class="btn btn-ghost" style="padding:11px 18px;font-size:.85rem" onclick="Builder.edit()">🎛 Edit Design</button>
+          <button class="btn btn-gold" style="padding:11px 20px;font-size:.85rem" onclick="Builder.publish()">⬆ Publish to Catalog</button>
+        </div>
       </div>
     </div>
   </div>
@@ -655,6 +715,7 @@ function go(screen){
   if(screen==='myOrders')Orders.myList();
   if(screen==='history')History.render();
   window.scrollTo({top:0});
+  window.__reveal?.();
 }
 
 /* ===== download helper ===== */
@@ -904,14 +965,15 @@ const Builder=(()=>{
       const bmp=writeBMP(q.indices,hooks,cards,q.palette); const pdf=buildCardPDF(name,cat,hooks,cards,q.palette,q.pct);
       const zip=makeZip([{name:base+'.png',data:await blobU8(png)},{name:base+'.bmp',data:await blobU8(bmp)},{name:base+'_card.pdf',data:await blobU8(pdf)}]);
       const t=document.createElement('canvas');t.width=300;t.height=Math.round(300*cards/hooks);t.getContext('2d').drawImage(rc,0,0,t.width,t.height);const thumb=t.toDataURL('image/jpeg',0.7);
-      last={name,category:cat,thumb,hooks,cards,k,palette:q.palette,pct:q.pct,files:[{name:base+'.png',type:'image/png',blob:png},{name:base+'.jpg',type:'image/jpeg',blob:jpg},{name:base+'.bmp',type:'image/bmp',blob:bmp},{name:base+'_card.pdf',type:'application/pdf',blob:pdf},{name:base+'_package.zip',type:'application/zip',blob:zip}]};
+      last={name,category:cat,thumb,hooks,cards,k,indices:q.indices,palette:q.palette,pct:q.pct,files:[{name:base+'.png',type:'image/png',blob:png},{name:base+'.jpg',type:'image/jpeg',blob:jpg},{name:base+'.bmp',type:'image/bmp',blob:bmp},{name:base+'_card.pdf',type:'application/pdf',blob:pdf},{name:base+'_package.zip',type:'application/zip',blob:zip}]};
       $('bMetrics').textContent='🧵 '+hooks.toLocaleString()+' hooks × '+cards.toLocaleString()+' cards · K'+k+' · '+last.files.length+' files ready';
       $('bDownloads').innerHTML=last.files.map((f,i)=>`<div class="file-row"><span class="file-ic">${fileIcon(f.name)}</span><div class="file-meta"><b>${f.name}</b><span>${(f.name.split('.').pop()||'').toUpperCase()} · ${fmtSize(f.blob.size)}</span></div><button class="dl-btn" onclick="Builder.dl(${i})">⬇ Download</button></div>`).join('');
       $('bResult').classList.remove('hidden'); $('bResult').scrollIntoView({behavior:'smooth'}); logMe('🎨','Generated (AI) '+name);
     }catch(e){ err.textContent='Generation failed: '+e.message; } finally{ btn.disabled=false; btn.textContent='✦ Generate Design'; } }
   function dl(i){ const f=last.files[i]; const a=document.createElement('a'); a.href=URL.createObjectURL(f.blob); a.download=f.name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); }
   async function publish(){ if(!last)return; const files2=[]; for(const f of last.files){ const id=rid(); await IDB.put(id,f.blob); files2.push({id,name:f.name,type:f.type,size:f.blob.size}); } const l=Designs.all(); const did='d'+Date.now(); l.unshift({id:did,name:last.name,category:last.category,description:'AI-generated '+last.category.toLowerCase()+' design.',thumb:last.thumb,files:files2,hooks:last.hooks,cards:last.cards,k:last.k,specs:{palette:last.palette.map((rgb,i)=>({hex:rgbToHex(rgb),pct:last.pct[i]})),k:last.k,hooks:last.hooks,cards:last.cards},date:new Date().toLocaleDateString(),published:true}); Designs.save(l); logMe('✨','Published AI design '+last.name,did); $('bResult').classList.add('hidden'); go('adminDesigns'); }
-  return { init, render, generate, dl, publish };
+  function edit(){ if(!last)return; Editor.openModel({indices:new Uint8Array(last.indices),palette:last.palette.map(c=>[...c]),pct:[...last.pct],w:last.hooks,h:last.cards,title:last.name,category:last.category,sourceId:null}); }
+  return { init, render, generate, dl, publish, edit };
 })();
 
 /* ===== deep editor (admin) ===== */
@@ -924,6 +986,7 @@ const Editor=(()=>{
   function snapshot(){ undoStack.push({indices:new Uint8Array(D.indices),palette:D.palette.map(c=>[...c]),pct:[...D.pct],w:D.w,h:D.h}); if(undoStack.length>15)undoStack.shift(); }
   function undo(){ const s=undoStack.pop(); if(s){D.indices=s.indices;D.palette=s.palette;D.pct=s.pct;D.w=s.w;D.h=s.h;render();} }
   async function open(id){ const d=Designs.all().find(x=>x.id===id); if(!d)return; D=await modelFromDesign(d); undoStack.length=0; $('edTitle').value=D.title; $('edCat').textContent=D.category; $('edK').value=Math.min(8,D.palette.length); render(); go('editor'); Chat.notifyOpen(); }
+  function openModel(model){ D=model; undoStack.length=0; $('edTitle').value=D.title; $('edCat').textContent=D.category; $('edK').value=Math.min(8,D.palette.length); render(); go('editor'); Chat.notifyOpen(); }
   function computePct(){ const counts=new Array(D.palette.length).fill(0); D.indices.forEach(i=>counts[i]++); D.pct=counts.map(c=>+(c*100/D.indices.length).toFixed(2)); }
   function paint(){ const cv=$('edCanvas'); const off=indicesToCanvas(D.indices,D.w,D.h,D.palette); cv.width=D.w;cv.height=D.h; cv.getContext('2d').drawImage(off,0,0); }
   function render(){ if(!D)return; paint(); $('edLayers').innerHTML=D.palette.map((rgb,i)=>`<div class="ed-layer"><input type="color" value="${rgbToHex(rgb)}" onchange="Editor.recolor(${i},this.value)"><span>${YARN[i]||('Shade '+(i+1))}</span><span class="ed-hex">${rgbToHex(rgb).toUpperCase()}</span><span class="ed-pct">${(D.pct[i]||0).toFixed(1)}%</span></div>`).join(''); $('edMetrics').textContent=`${D.w} × ${D.h} px · ${D.palette.length} colours · tap a swatch to change any shade`; }
@@ -939,11 +1002,14 @@ const Editor=(()=>{
   async function buildFiles(model){ const base=(model.title||'design').replace(/\s+/g,'_'); const rc=indicesToCanvas(model.indices,model.w,model.h,model.palette); const png=await new Promise(r=>rc.toBlob(r,'image/png')); const jpg=await new Promise(r=>rc.toBlob(r,'image/jpeg',0.9)); const bmp=writeBMP(model.indices,model.w,model.h,model.palette); const pdf=buildCardPDF(model.title,model.category,model.w,model.h,model.palette,model.pct); const zip=makeZip([{name:base+'.png',data:await blobU8(png)},{name:base+'.bmp',data:await blobU8(bmp)},{name:base+'_card.pdf',data:await blobU8(pdf)}]); return [{name:base+'.png',type:'image/png',blob:png},{name:base+'.jpg',type:'image/jpeg',blob:jpg},{name:base+'.bmp',type:'image/bmp',blob:bmp},{name:base+'_card.pdf',type:'application/pdf',blob:pdf},{name:base+'_package.zip',type:'application/zip',blob:zip}]; }
   function thumbOf(model){ const rc=indicesToCanvas(model.indices,model.w,model.h,model.palette); const t=document.createElement('canvas'); t.width=300;t.height=Math.max(1,Math.round(300*model.h/model.w)); t.getContext('2d').drawImage(rc,0,0,t.width,t.height); return t.toDataURL('image/jpeg',0.72); }
   function specsOf(model,d){ return {palette:model.palette.map((rgb,i)=>({hex:rgbToHex(rgb),pct:model.pct[i]})),k:model.palette.length,hooks:(d&&d.hooks)||null,cards:(d&&d.cards)||null}; }
-  async function save(){ if(!D)return; D.title=$('edTitle').value.trim()||D.title; const files=await buildFiles(D); const l=Designs.all(); const d=l.find(x=>x.id===D.sourceId); if(!d)return; for(const f of d.files) await IDB.del(f.id); const files2=[]; for(const f of files){const id=rid();await IDB.put(id,f.blob);files2.push({id,name:f.name,type:f.type,size:f.blob.size});} d.name=D.title; d.files=files2; d.thumb=thumbOf(D); d.k=D.palette.length; d.specs=specsOf(D,d); Designs.save(l); logMe('✏️','Edited design '+D.title,d.id); go('adminDesigns'); }
+  async function save(){ if(!D)return; D.title=$('edTitle').value.trim()||D.title; const files=await buildFiles(D); const files2=[]; for(const f of files){const id=rid();await IDB.put(id,f.blob);files2.push({id,name:f.name,type:f.type,size:f.blob.size});} const l=Designs.all(); const d=l.find(x=>x.id===D.sourceId);
+    if(d){ for(const f of d.files) await IDB.del(f.id); d.name=D.title; d.files=files2; d.thumb=thumbOf(D); d.k=D.palette.length; d.specs=specsOf(D,d); Designs.save(l); logMe('✏️','Edited design '+D.title,d.id); }
+    else { const did='d'+Date.now(); D.sourceId=did; l.unshift({id:did,name:D.title,category:D.category,description:'AI-generated & edited '+D.category.toLowerCase()+' design.',thumb:thumbOf(D),files:files2,k:D.palette.length,specs:specsOf(D,null),date:new Date().toLocaleDateString(),published:true}); Designs.save(l); logMe('✨','Saved edited AI design '+D.title,did); }
+    go('adminDesigns'); }
   async function saveCopy(){ if(!D)return; const title=($('edTitle').value.trim()||D.title)+' (Copy)'; const model={...D,title}; const files=await buildFiles(model); const files2=[]; for(const f of files){const id=rid();await IDB.put(id,f.blob);files2.push({id,name:f.name,type:f.type,size:f.blob.size});} const l=Designs.all(); const did='d'+Date.now(); l.unshift({id:did,name:title,category:D.category,description:'Edited '+D.category.toLowerCase()+' design.',thumb:thumbOf(model),files:files2,k:D.palette.length,specs:specsOf(model,null),date:new Date().toLocaleDateString(),published:true}); Designs.save(l); logMe('✨','Saved edited copy '+title,did); go('adminDesigns'); }
   function downloadPNG(){ if(!D)return; const rc=indicesToCanvas(D.indices,D.w,D.h,D.palette); rc.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(D.title||'design').replace(/\s+/g,'_')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);}); }
   function downloadBMP(){ if(!D)return; const b=writeBMP(D.indices,D.w,D.h,D.palette); const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(D.title||'design').replace(/\s+/g,'_')+'.bmp';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000); }
-  return { open, undo, recolor, recolorRGB, flipH, flipV, rotate180, mirrorPanel, scalePattern, variation, requantize, save, saveCopy, downloadPNG, downloadBMP, isOpen, get:()=>D };
+  return { open, openModel, undo, recolor, recolorRGB, flipH, flipV, rotate180, mirrorPanel, scalePattern, variation, requantize, save, saveCopy, downloadPNG, downloadBMP, isOpen, get:()=>D };
 })();
 
 /* ===== trilingual AI chat (EN / हिंदी / ગુજરાતી) ===== */
@@ -1059,10 +1125,17 @@ const App=(()=>{
     $('authToggle').addEventListener('click',()=>setAuthMode(authMode==='login'?'register':'login'));
     $('navBurger').addEventListener('click',e=>{e.stopPropagation();$('mainNav').classList.toggle('open');});
     document.addEventListener('click',e=>{ if(!e.target.closest('#mainNav')&&!e.target.closest('#navBurger'))$('mainNav').classList.remove('open'); });
-    // keep customer permission fresh when navigating
-    ['catalog','detail'].forEach(()=>{});
-    const origGo=window.go; // wrap not needed; refresh on visibility
     document.addEventListener('visibilitychange',refreshPerm);
+    // home preview strip + live design count
+    const pub=Designs.all().filter(d=>d.published);
+    $('homePreview').innerHTML=pub.slice(0,5).map(d=>`<img src="${d.thumb}" alt="">`).join('');
+    $('hsDesigns').textContent=pub.length;
+    // scroll-reveal (robust for embeds/webviews)
+    const rvEls=[...document.querySelectorAll('.rv')];
+    window.__reveal=()=>rvEls.forEach(el=>{ if(el.classList.contains('rv-in'))return; const r=el.getBoundingClientRect(); if(r.top<innerHeight*.92&&r.bottom>0)el.classList.add('rv-in'); });
+    addEventListener('scroll',window.__reveal,{passive:true}); addEventListener('resize',window.__reveal);
+    window.__reveal();
+    if(document.documentElement.scrollHeight>innerHeight){ scrollTo(0,2); if(!scrollY)rvEls.forEach(el=>el.classList.add('rv-in')); else scrollTo(0,0); }
     go('home');
     setTimeout(()=>$('pageLoader').classList.add('done'),1400);
   }
